@@ -1,7 +1,6 @@
+import { env } from './config/env.ts';
 import { router } from './routes.ts';
 
-const port = Number(Deno.env.get('PORT') ?? 8000);
+Deno.serve({ port: env.PORT }, router);
 
-Deno.serve({ port }, router);
-
-console.log(`BaseLayer listening on http://localhost:${port}`);
+console.log(`BaseLayer listening on http://localhost:${env.PORT}`);

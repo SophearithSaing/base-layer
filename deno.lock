@@ -1,9 +1,15 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/dotenv@*": "0.225.7",
     "npm:jose@*": "6.2.3",
     "npm:mongodb@6": "6.21.0",
     "npm:together-ai@*": "0.40.0"
+  },
+  "jsr": {
+    "@std/dotenv@0.225.7": {
+      "integrity": "11d8db03ca4ad5aba9eba809f2e8058b2a4f320b7b09fea4b360e162928329e3"
+    }
   },
   "npm": {
     "@mongodb-js/saslprep@1.4.11": {
