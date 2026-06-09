@@ -1,6 +1,7 @@
 import { env } from './config/env.ts';
+import { connectMongo } from './db/mongo.ts';
 import { router } from './routes.ts';
 
-Deno.serve({ port: env.PORT }, router);
+await connectMongo();
 
-console.log(`BaseLayer listening on http://localhost:${env.PORT}`);
+Deno.serve({ port: env.PORT }, router);
