@@ -1,4 +1,4 @@
-import '@std/dotenv';
+import '@std/dotenv/load';
 
 function getRequiredEnv(key: string): string {
   const value = Deno.env.get(key);
