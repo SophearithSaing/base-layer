@@ -6,6 +6,8 @@ import {
   createProject,
   ProjectPayload,
   getProject,
+  updateProject,
+  deleteProject,
 } from './projects.service.ts';
 
 export const projectRoutes: Route[] = [
@@ -38,6 +40,27 @@ export const projectRoutes: Route[] = [
       const project = await getProject(user.userId, params.id);
 
       return json({ project });
+    },
+  },
+  {
+    method: HttpMethod.PATCH,
+    pattern: new URLPattern({ pathname: '/projects/:id' }),
+    handler: async (req: Request, params: Record<string, string>) => {
+      const user = await requireUser(req);
+      const payload = await readJson<ProjectPayload>(req);
+      const project = await updateProject(user.userId, params.id, payload);
+
+      return json({ project });
+    },
+  },
+  {
+    method: HttpMethod.DELETE,
+    pattern: new URLPattern({ pathname: '/projects/:id' }),
+    handler: async (req: Request, params: Record<string, string>) => {
+      const user = await requireUser(req);
+      await deleteProject(user.userId, params.id);
+
+      return json({ ok: true });
     },
   },
 ];

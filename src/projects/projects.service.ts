@@ -29,7 +29,10 @@ export async function createProject(
   });
 }
 
-export async function getProject(userId: string, projectId: string) {
+export async function getProject(
+  userId: string,
+  projectId: string,
+): Promise<WithId<ProjectDoc>> {
   const project = await projects.findOne({
     _id: new ObjectId(projectId),
     userId: new ObjectId(userId),
@@ -40,4 +43,45 @@ export async function getProject(userId: string, projectId: string) {
   }
 
   return project;
+}
+
+export async function updateProject(
+  userId: string,
+  projectId: string,
+  payload: ProjectPayload,
+): Promise<WithId<ProjectDoc>> {
+  const result = await projects.findOneAndUpdate(
+    {
+      _id: new ObjectId(projectId),
+      userId: new ObjectId(userId),
+    },
+    {
+      $set: { ...payload, updatedAt: new Date() },
+    },
+    {
+      returnDocument: 'after',
+    },
+  );
+
+  if (!result) {
+    throw new HttpError('Project not found', 404);
+  }
+
+  return result;
+}
+
+export async function deleteProject(
+  userId: string,
+  projectId: string,
+): Promise<boolean> {
+  const result = await projects.deleteOne({
+    _id: new ObjectId(projectId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!result.deletedCount) {
+    throw new HttpError('Project not found', 404);
+  }
+
+  return result.deletedCount === 1;
 }
