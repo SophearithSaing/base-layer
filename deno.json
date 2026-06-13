@@ -1,10 +1,11 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-sys src/main.ts",
-    "start": "deno run --allow-net --allow-env src/main.ts",
+    "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-sys --allow-ffi src/main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --allow-sys --allow-ffi src/main.ts",
     "check": "deno check src/main.ts"
   },
   "imports": {
+    "@felix/argon2": "jsr:@felix/argon2@^3.0.5",
     "@std/dotenv": "jsr:@std/dotenv",
     "mongodb": "npm:mongodb@6",
     "jose": "npm:jose",

@@ -1,12 +1,14 @@
+import { authRoutes } from './auth/auth.routes.ts';
 import { error, Handler, HttpError, HttpMethod } from './shared/http.ts';
 
-type Route = {
+export type Route = {
   method: HttpMethod;
   pattern: URLPattern;
   handler: Handler;
 };
 
 const routes: Route[] = [
+  ...authRoutes,
   {
     method: HttpMethod.GET,
     pattern: new URLPattern({ pathname: '/' }),
