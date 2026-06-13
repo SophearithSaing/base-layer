@@ -1,4 +1,5 @@
 import { authRoutes } from './auth/auth.routes.ts';
+import { projectRoutes } from './projects/projects.routes.ts';
 import { error, Handler, HttpError, HttpMethod } from './shared/http.ts';
 
 export type Route = {
@@ -9,6 +10,7 @@ export type Route = {
 
 const routes: Route[] = [
   ...authRoutes,
+  ...projectRoutes,
   {
     method: HttpMethod.GET,
     pattern: new URLPattern({ pathname: '/' }),
