@@ -1,5 +1,6 @@
 import { InsertOneResult, ObjectId, WithId } from 'mongodb';
 import { ProjectDoc, projects } from '../db/collections.ts';
+import { HttpError } from '../shared/http.ts';
 
 export type ProjectPayload = {
   name: string;
@@ -26,4 +27,17 @@ export async function createProject(
     createdAt: now,
     updatedAt: now,
   });
+}
+
+export async function getProject(userId: string, projectId: string) {
+  const project = await projects.findOne({
+    _id: new ObjectId(projectId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!project) {
+    throw new HttpError('Project not found', 404);
+  }
+
+  return project;
 }

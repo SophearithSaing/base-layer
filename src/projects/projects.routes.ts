@@ -5,6 +5,7 @@ import {
   listProjects,
   createProject,
   ProjectPayload,
+  getProject,
 } from './projects.service.ts';
 
 export const projectRoutes: Route[] = [
@@ -27,6 +28,16 @@ export const projectRoutes: Route[] = [
       const project = await createProject(user.userId, payload);
 
       return json({ project }, { status: 201 });
+    },
+  },
+  {
+    method: HttpMethod.GET,
+    pattern: new URLPattern({ pathname: '/projects/:id' }),
+    handler: async (req: Request, params: Record<string, string>) => {
+      const user = await requireUser(req);
+      const project = await getProject(user.userId, params.id);
+
+      return json({ project });
     },
   },
 ];
