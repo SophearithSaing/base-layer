@@ -1,5 +1,6 @@
 import { authRoutes } from './auth/auth.routes.ts';
 import { projectRoutes } from './projects/projects.routes.ts';
+import { getCorsHeaders, preflight } from './shared/cors.ts';
 import { error, Handler, HttpError, HttpMethod } from './shared/http.ts';
 
 export type Route = {
@@ -32,6 +33,10 @@ const routes: Route[] = [
 ];
 
 export async function router(req: Request): Promise<Response> {
+  if (req.method === 'OPTIONS') {
+    return preflight(req);
+  }
+
   const url = new URL(req.url);
 
   for (const route of routes) {
@@ -46,7 +51,18 @@ export async function router(req: Request): Promise<Response> {
     const groups = (match.pathname.groups ?? {}) as Record<string, string>;
 
     try {
-      return await route.handler(req, groups);
+      const res = await route.handler(req, groups);
+      const headers = new Headers(res.headers);
+
+      getCorsHeaders(req).forEach((value, key) => {
+        headers.set(key, value);
+      });
+
+      return new Response(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers,
+      });
     } catch (err) {
       if (err instanceof HttpError) {
         return error(err.message, err.status);
