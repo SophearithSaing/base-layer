@@ -13,6 +13,7 @@ import { requireUser } from './requireUser.ts';
 import { hashPassword, verifyPassword } from './password.ts';
 import { HttpError } from '../shared/http.ts';
 import { Route } from '../routes.ts';
+import { validateAuthInput } from './authValidation.ts';
 type AuthRequestPayload = {
   email: string;
   password: string;
@@ -51,6 +52,7 @@ export const authRoutes: Route[] = [
 
 async function register(req: Request): Promise<Response> {
   const { email, password } = await readJson<AuthRequestPayload>(req);
+  validateAuthInput({ email, password });
   const existing = await users.findOne({ email });
 
   if (existing) {
@@ -73,6 +75,7 @@ async function register(req: Request): Promise<Response> {
 
 async function login(req: Request): Promise<Response> {
   const { email, password } = await readJson<AuthRequestPayload>(req);
+  validateAuthInput({ email, password });
   const user = await users.findOne({ email });
 
   if (!user) {
