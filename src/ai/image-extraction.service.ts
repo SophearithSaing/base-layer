@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { toObjectId } from '../shared/objectId.ts';
 import { AiExtractionDoc, aiExtractions } from '../db/collections.ts';
 import { together } from './together.ts';
@@ -125,4 +125,14 @@ export async function extractReceiptFromImage(
   await aiExtractions.insertOne(doc);
 
   return doc;
+}
+
+export async function listExtractions(
+  userId: string,
+): Promise<WithId<AiExtractionDoc>[]> {
+  return await aiExtractions
+    .find({ userId: toObjectId(userId) })
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .toArray();
 }
