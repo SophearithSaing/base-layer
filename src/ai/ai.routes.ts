@@ -44,26 +44,30 @@ export const aiRoutes: Route[] = [
       const file = await getUploadedFile(req, 'image');
       validateImageFile(file);
       const imageDataUrl = await fileToDataUrl(file);
-      const extraction = await extractTextFromImage(user.userId, {
+      const result = await extractTextFromImage(user.userId, {
         imageDataUrl,
         fileName: file.name,
         mimeType: file.type,
       });
 
-      return json({ extraction }, { status: 201 });
+      return json({ result }, { status: 201 });
     },
   },
   {
     method: HttpMethod.POST,
     pattern: new URLPattern({ pathname: '/ai/extract-receipt' }),
     handler: async (req: Request) => {
-      requireUser(req);
+      const user = await requireUser(req);
       const file = await getUploadedFile(req, 'image');
       validateImageFile(file);
       const imageDataUrl = await fileToDataUrl(file);
-      const extraction = await extractReceiptFromImage(imageDataUrl);
+      const result = await extractReceiptFromImage(user.userId, {
+        imageDataUrl,
+        fileName: file.name,
+        mimeType: file.type,
+      });
 
-      return json({ extraction }, { status: 201 });
+      return json({ result }, { status: 201 });
     },
   },
 ];

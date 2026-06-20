@@ -58,8 +58,9 @@ export async function extractTextFromImage(
 }
 
 export async function extractReceiptFromImage(
-  imageDataUrl: string,
-): Promise<Array<unknown>> {
+  userId: string,
+  data: ExtractTextFromImagePayload,
+): Promise<AiExtractionDoc> {
   const response = await together.chat.completions.create({
     model: AIModels.KimiK_2_6,
     messages: [
@@ -96,7 +97,7 @@ export async function extractReceiptFromImage(
           {
             type: 'image_url',
             image_url: {
-              url: imageDataUrl,
+              url: data.imageDataUrl,
             },
           },
         ],
@@ -112,5 +113,16 @@ export async function extractReceiptFromImage(
     .replace(/```$/i, '')
     .trim();
 
-  return JSON.parse(sanitizedText);
+  const doc = {
+    _id: new ObjectId(),
+    userId: toObjectId(userId),
+    fileName: data.fileName,
+    mimeType: data.mimeType,
+    extractedText: sanitizedText,
+    createdAt: new Date(),
+  };
+
+  await aiExtractions.insertOne(doc);
+
+  return doc;
 }
