@@ -3,7 +3,11 @@ import { Route } from '../routes.ts';
 import { fileToDataUrl, getUploadedFile } from '../shared/files.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';
 import { validateChatInput } from './ai-validation.ts';
-import { extractTextFromImage } from './image-extraction.service.ts';
+import {
+  AIModels,
+  extractReceiptFromImage,
+  extractTextFromImage,
+} from './image-extraction.service.ts';
 import { validateImageFile } from './image-validation.ts';
 import { together } from './together.ts';
 
@@ -20,7 +24,7 @@ export const aiRoutes: Route[] = [
       const payload = await readJson<ChatPayload>(req);
       validateChatInput(payload);
       const response = await together.chat.completions.create({
-        model: 'google/gemma-4-31B-it',
+        model: AIModels.GLM_5_2,
         messages: [
           {
             role: 'user',
@@ -45,6 +49,19 @@ export const aiRoutes: Route[] = [
         fileName: file.name,
         mimeType: file.type,
       });
+
+      return json({ extraction }, { status: 201 });
+    },
+  },
+  {
+    method: HttpMethod.POST,
+    pattern: new URLPattern({ pathname: '/ai/extract-receipt' }),
+    handler: async (req: Request) => {
+      requireUser(req);
+      const file = await getUploadedFile(req, 'image');
+      validateImageFile(file);
+      const imageDataUrl = await fileToDataUrl(file);
+      const extraction = await extractReceiptFromImage(imageDataUrl);
 
       return json({ extraction }, { status: 201 });
     },
