@@ -9,6 +9,6 @@
     "@std/dotenv": "jsr:@std/dotenv",
     "mongodb": "npm:mongodb@6",
     "jose": "npm:jose",
-    "together-ai": "npm:together-ai"
+    "together-ai": "npm:together-ai@^0.40.0"
   }
 }
