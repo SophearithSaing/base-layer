@@ -23,6 +23,7 @@ export async function saveRefreshToken(
   await refreshTokens.insertOne({
     _id: new ObjectId(),
     userId,
+    tokenLookupHash: await createTokenLookupHash(token),
     tokenHash,
     expiresAt: getRefreshExpiry(),
     createdAt: new Date(),
@@ -32,20 +33,20 @@ export async function saveRefreshToken(
 export async function findValidRefreshToken(
   token: string,
 ): Promise<WithId<RefreshTokenDoc> | null> {
-  const candidates = await refreshTokens
-    .find({
-      revokedAt: { $exists: false },
-      expiresAt: { $gt: new Date() },
-    })
-    .toArray();
+  const tokenLookupHash = await createTokenLookupHash(token);
+  const doc = await refreshTokens.findOne({
+    tokenLookupHash,
+    revokedAt: { $exists: false },
+    expiresAt: { $gt: new Date() },
+  });
 
-  for (const doc of candidates) {
-    if (await verifyPassword(token, doc.tokenHash)) {
-      return doc;
-    }
+  if (!doc) {
+    return null;
   }
 
-  return null;
+  const valid = await verifyPassword(token, doc.tokenHash);
+
+  return valid ? doc : null;
 }
 
 export async function revokeRefreshToken(id: ObjectId): Promise<void> {
@@ -53,4 +54,13 @@ export async function revokeRefreshToken(id: ObjectId): Promise<void> {
     { _id: id },
     { $set: { revokedAt: new Date() } },
   );
+}
+
+async function createTokenLookupHash(token: string): Promise<string> {
+  const data = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
 }

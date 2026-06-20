@@ -12,6 +12,7 @@ export type UserDoc = {
 export type RefreshTokenDoc = {
   _id: ObjectId;
   userId: ObjectId;
+  tokenLookupHash: string;
   tokenHash: string;
   expiresAt: Date;
   revokedAt?: Date;
@@ -43,7 +44,7 @@ export const aiMessages = db.collection<AiMessageDoc>('ai_messages');
 export async function ensureIndexes() {
   await users.createIndex({ email: 1 }, { unique: true });
 
-  await refreshTokens.createIndex({ tokenHash: 1 }, { unique: true });
+  await refreshTokens.createIndex({ tokenLookupHash: 1 }, { unique: true });
   await refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
   await refreshTokens.createIndex({ userId: 1 });
 
