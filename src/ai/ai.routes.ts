@@ -1,7 +1,10 @@
 import { requireUser } from '../auth/requireUser.ts';
 import { Route } from '../routes.ts';
+import { fileToDataUrl, getUploadedFile } from '../shared/files.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';
-import { validateChatInput } from './aiValidation.ts';
+import { validateChatInput } from './ai-validation.ts';
+import { extractTextFromImage } from './image-extraction.service.ts';
+import { validateImageFile } from './image-validation.ts';
 import { together } from './together.ts';
 
 interface ChatPayload {
@@ -27,6 +30,23 @@ export const aiRoutes: Route[] = [
       });
 
       return json({ message: response.choices[0].message?.content });
+    },
+  },
+  {
+    method: HttpMethod.POST,
+    pattern: new URLPattern({ pathname: '/ai/extract-text' }),
+    handler: async (req: Request) => {
+      const user = await requireUser(req);
+      const file = await getUploadedFile(req, 'image');
+      validateImageFile(file);
+      const imageDataUrl = await fileToDataUrl(file);
+      const extraction = await extractTextFromImage(user.userId, {
+        imageDataUrl,
+        fileName: file.name,
+        mimeType: file.type,
+      });
+
+      return json({ extraction }, { status: 201 });
     },
   },
 ];
