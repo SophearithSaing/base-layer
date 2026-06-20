@@ -118,17 +118,11 @@ async function logout(req: Request): Promise<Response> {
     }
   }
 
-  return json(
-    { ok: true },
-    {
-      headers: {
-        'set-cookie': [
-          clearCookie('access_token'),
-          clearCookie('refresh_token'),
-        ].join(', '),
-      },
-    },
-  );
+  const headers = new Headers();
+  headers.append('Set-Cookie', clearCookie('access_token'));
+  headers.append('Set-Cookie', clearCookie('refresh_token', '/auth/refresh'));
+
+  return json({ ok: true }, { headers });
 }
 
 async function me(req: Request): Promise<Response> {
@@ -149,23 +143,25 @@ async function issueAuthResponse(
   const refreshToken = createRefreshToken();
   await saveRefreshToken(userId, refreshToken);
 
-  return json({
-    user: { id: userId.toString(), email },
-    headers: {
-      'set-cookie': [
-        serializeCookie('access_token', accessToken, {
-          httpOnly: true,
-          sameSite: 'Lax',
-          path: '/',
-          maxAge: ACCESS_MAX_AGE,
-        }),
-        serializeCookie('refresh_token', refreshToken, {
-          httpOnly: true,
-          sameSite: 'Lax',
-          path: '/auth/refresh',
-          maxAge: REFRESH_MAX_AGE,
-        }),
-      ].join(', '),
-    },
-  });
+  const headers = new Headers();
+  headers.append(
+    'Set-Cookie',
+    serializeCookie('access_token', accessToken, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: ACCESS_MAX_AGE,
+    }),
+  );
+  headers.append(
+    'Set-Cookie',
+    serializeCookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      path: '/auth/refresh',
+      maxAge: REFRESH_MAX_AGE,
+    }),
+  );
+
+  return json({ user: { id: userId.toString(), email }, headers });
 }
