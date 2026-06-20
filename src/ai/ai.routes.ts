@@ -7,6 +7,7 @@ import {
   AIModels,
   extractReceiptFromImage,
   extractTextFromImage,
+  listExtractions,
 } from './image-extraction.service.ts';
 import { validateImageFile } from './image-validation.ts';
 import { together } from './together.ts';
@@ -68,6 +69,16 @@ export const aiRoutes: Route[] = [
       });
 
       return json({ result }, { status: 201 });
+    },
+  },
+  {
+    method: HttpMethod.GET,
+    pattern: new URLPattern({ pathname: '/ai/extractions' }),
+    handler: async (req: Request) => {
+      const user = await requireUser(req);
+      const extractions = await listExtractions(user.userId);
+
+      return json({ extractions });
     },
   },
 ];
