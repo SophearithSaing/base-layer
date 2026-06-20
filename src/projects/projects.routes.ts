@@ -9,6 +9,10 @@ import {
   updateProject,
   deleteProject,
 } from './projects.service.ts';
+import {
+  validateCreateProject,
+  validateUpdateProject,
+} from './projectValidation.ts';
 
 export const projectRoutes: Route[] = [
   {
@@ -27,6 +31,7 @@ export const projectRoutes: Route[] = [
     handler: async (req: Request) => {
       const user = await requireUser(req);
       const payload = await readJson<ProjectPayload>(req);
+      validateCreateProject(payload);
       const project = await createProject(user.userId, payload);
 
       return json({ project }, { status: 201 });
@@ -48,6 +53,7 @@ export const projectRoutes: Route[] = [
     handler: async (req: Request, params: Record<string, string>) => {
       const user = await requireUser(req);
       const payload = await readJson<ProjectPayload>(req);
+      validateUpdateProject(payload);
       const project = await updateProject(user.userId, params.id, payload);
 
       return json({ project });
