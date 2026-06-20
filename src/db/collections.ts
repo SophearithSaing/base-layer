@@ -36,10 +36,20 @@ export type AiMessageDoc = {
   createdAt: Date;
 };
 
+export type AiExtractionDoc = {
+  _id: ObjectId;
+  userId: ObjectId;
+  fileName?: string;
+  mimeType: string;
+  extractedText: string;
+  createdAt: Date;
+};
+
 export const users = db.collection<UserDoc>('users');
 export const refreshTokens = db.collection<RefreshTokenDoc>('refresh_tokens');
 export const projects = db.collection<ProjectDoc>('projects');
 export const aiMessages = db.collection<AiMessageDoc>('ai_messages');
+export const aiExtractions = db.collection<AiExtractionDoc>('ai_extractions');
 
 export async function ensureIndexes() {
   await users.createIndex({ email: 1 }, { unique: true });
@@ -49,4 +59,6 @@ export async function ensureIndexes() {
   await refreshTokens.createIndex({ userId: 1 });
 
   await projects.createIndex({ userId: 1 });
+
+  await aiExtractions.createIndex({ userId: 1, createdAt: -1 });
 }

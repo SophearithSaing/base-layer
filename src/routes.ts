@@ -1,3 +1,4 @@
+import { aiRoutes } from './ai/ai.routes.ts';
 import { authRoutes } from './auth/auth.routes.ts';
 import { projectRoutes } from './projects/projects.routes.ts';
 import { getCorsHeaders, preflight } from './shared/cors.ts';
@@ -12,6 +13,7 @@ export type Route = {
 const routes: Route[] = [
   ...authRoutes,
   ...projectRoutes,
+  ...aiRoutes,
   {
     method: HttpMethod.GET,
     pattern: new URLPattern({ pathname: '/' }),

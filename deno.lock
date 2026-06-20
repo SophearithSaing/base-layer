@@ -12,7 +12,7 @@
     "jsr:@std/path@^1.1.5": "1.1.5",
     "npm:jose@*": "6.2.3",
     "npm:mongodb@6": "6.21.0",
-    "npm:together-ai@*": "0.40.0"
+    "npm:together-ai@0.40": "0.40.0"
   },
   "jsr": {
     "@denosaurs/plug@1.1.0": {
@@ -132,7 +132,7 @@
       "jsr:@std/dotenv@*",
       "npm:jose@*",
       "npm:mongodb@6",
-      "npm:together-ai@*"
+      "npm:together-ai@0.40"
     ]
   }
 }
