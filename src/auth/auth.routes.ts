@@ -163,5 +163,5 @@ async function issueAuthResponse(
     }),
   );
 
-  return json({ user: { id: userId.toString(), email }, headers });
+  return json({ user: { id: userId.toString(), email } }, { headers });
 }

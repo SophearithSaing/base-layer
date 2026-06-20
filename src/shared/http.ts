@@ -14,12 +14,14 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 export function json(data: unknown, init: ResponseInit = {}) {
-  return Response.json(data, {
+  const headers = new Headers(init.headers);
+  if (!headers.has('content-type')) {
+    headers.set('content-type', 'application/json');
+  }
+
+  return new Response(JSON.stringify(data), {
     ...init,
-    headers: {
-      'content-type': 'application/json',
-      ...(init.headers ?? {}),
-    },
+    headers,
   });
 }
 
