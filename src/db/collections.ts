@@ -41,7 +41,8 @@ export type AiExtractionDoc = {
   userId: ObjectId;
   fileName?: string;
   mimeType: string;
-  extractedText: string;
+  extractedText?: string;
+  extractedObject?: unknown;
   createdAt: Date;
 };
 

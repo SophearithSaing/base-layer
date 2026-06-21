@@ -43,7 +43,7 @@ export async function extractTextFromImage(
 
   const extractedText = response.choices[0].message?.content ?? '';
 
-  const doc = {
+  const doc: AiExtractionDoc = {
     _id: new ObjectId(),
     userId: toObjectId(userId),
     fileName: data.fileName,
@@ -61,8 +61,28 @@ export async function extractReceiptFromImage(
   userId: string,
   data: ExtractTextFromImagePayload,
 ): Promise<AiExtractionDoc> {
+  const schema = {
+    type: 'array',
+    items: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['name', 'amount'],
+      properties: {
+        name: { type: 'string' },
+        age: { type: 'number' },
+      },
+    },
+  };
+
   const response = await together.chat.completions.create({
     model: AIModels.KimiK_2_6,
+    response_format: {
+      type: 'json_schema',
+      json_schema: {
+        name: 'receipt',
+        schema,
+      },
+    },
     messages: [
       {
         role: 'system',
@@ -106,19 +126,13 @@ export async function extractReceiptFromImage(
   });
 
   const extractedText = response.choices[0].message?.content ?? '{}';
-  const sanitizedText = extractedText
-    .trim()
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/```$/i, '')
-    .trim();
 
-  const doc = {
+  const doc: AiExtractionDoc = {
     _id: new ObjectId(),
     userId: toObjectId(userId),
     fileName: data.fileName,
     mimeType: data.mimeType,
-    extractedText: sanitizedText,
+    extractedObject: JSON.parse(extractedText),
     createdAt: new Date(),
   };
 
