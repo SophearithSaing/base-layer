@@ -1,5 +1,6 @@
 import { aiRoutes } from './ai/ai.routes.ts';
 import { authRoutes } from './auth/auth.routes.ts';
+import { groupRoutes } from './groups/groups.routes.ts';
 import { projectRoutes } from './projects/projects.routes.ts';
 import { addCorsHeaders, preflight } from './shared/cors.ts';
 import { error, Handler, HttpError, HttpMethod } from './shared/http.ts';
@@ -13,6 +14,7 @@ export type Route = {
 const routes: Route[] = [
   ...authRoutes,
   ...projectRoutes,
+  ...groupRoutes,
   ...aiRoutes,
   {
     method: HttpMethod.GET,
