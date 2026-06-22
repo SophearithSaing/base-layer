@@ -1,7 +1,7 @@
 import { HttpError } from '../shared/http.ts';
 
 const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
-const maxSize = 5 * 1024 * 1024;
+const maxSize = 10 * 1024 * 1024;
 
 export function validateImageFile(file: File) {
   if (!allowedTypes.includes(file.type)) {
@@ -9,6 +9,6 @@ export function validateImageFile(file: File) {
   }
 
   if (file.size > maxSize) {
-    throw new HttpError('Image must be under 5MB', 400);
+    throw new HttpError('Image must be under 10MB', 400);
   }
 }

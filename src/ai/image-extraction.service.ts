@@ -1,7 +1,8 @@
 import { ObjectId, WithId } from 'mongodb';
-import { toObjectId } from '../shared/objectId.ts';
+import { toObjectId } from '../shared/object-id.ts';
 import { AiExtractionDoc, aiExtractions } from '../db/collections.ts';
 import { together } from './together.ts';
+import { parseExtractedReceiptObject } from './receipt-json.ts';
 
 export enum AIModels {
   Gemma_4 = 'google/gemma-4-31B-it',
@@ -69,7 +70,7 @@ export async function extractReceiptFromImage(
       required: ['name', 'amount'],
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' },
+        amount: { type: 'number' },
       },
     },
   };
@@ -132,7 +133,7 @@ export async function extractReceiptFromImage(
     userId: toObjectId(userId),
     fileName: data.fileName,
     mimeType: data.mimeType,
-    extractedObject: JSON.parse(extractedText),
+    extractedObject: parseExtractedReceiptObject(extractedText),
     createdAt: new Date(),
   };
 

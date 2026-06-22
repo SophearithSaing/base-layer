@@ -1,4 +1,4 @@
-import { requireUser } from '../auth/requireUser.ts';
+import { requireUser } from '../auth/require-user.ts';
 import { Route } from '../routes.ts';
 import { fileToDataUrl, getUploadedFile } from '../shared/files.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';

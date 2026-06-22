@@ -1,7 +1,8 @@
 import { aiRoutes } from './ai/ai.routes.ts';
 import { authRoutes } from './auth/auth.routes.ts';
+import { groupRoutes } from './groups/groups.routes.ts';
 import { projectRoutes } from './projects/projects.routes.ts';
-import { getCorsHeaders, preflight } from './shared/cors.ts';
+import { addCorsHeaders, preflight } from './shared/cors.ts';
 import { error, Handler, HttpError, HttpMethod } from './shared/http.ts';
 
 export type Route = {
@@ -13,6 +14,7 @@ export type Route = {
 const routes: Route[] = [
   ...authRoutes,
   ...projectRoutes,
+  ...groupRoutes,
   ...aiRoutes,
   {
     method: HttpMethod.GET,
@@ -54,26 +56,16 @@ export async function router(req: Request): Promise<Response> {
 
     try {
       const res = await route.handler(req, groups);
-      const headers = new Headers(res.headers);
-
-      getCorsHeaders(req).forEach((value, key) => {
-        headers.set(key, value);
-      });
-
-      return new Response(res.body, {
-        status: res.status,
-        statusText: res.statusText,
-        headers,
-      });
+      return addCorsHeaders(req, res);
     } catch (err) {
       if (err instanceof HttpError) {
-        return error(err.message, err.status);
+        return addCorsHeaders(req, error(err.message, err.status));
       }
 
       console.error(err);
-      return error('Internal server error', 500);
+      return addCorsHeaders(req, error('Internal server error', 500));
     }
   }
 
-  return error('Not Found', 404);
+  return addCorsHeaders(req, error('Not Found', 404));
 }

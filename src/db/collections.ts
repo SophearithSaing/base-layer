@@ -28,6 +28,16 @@ export type ProjectDoc = {
   updatedAt: Date;
 };
 
+// Temporary
+export type GroupDoc = {
+  _id: ObjectId;
+  creatorId: ObjectId;
+  name: string;
+  people: string[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type AiMessageDoc = {
   _id: ObjectId;
   userId: ObjectId;
@@ -49,6 +59,7 @@ export type AiExtractionDoc = {
 export const users = db.collection<UserDoc>('users');
 export const refreshTokens = db.collection<RefreshTokenDoc>('refresh_tokens');
 export const projects = db.collection<ProjectDoc>('projects');
+export const groups = db.collection<GroupDoc>('groups');
 export const aiMessages = db.collection<AiMessageDoc>('ai_messages');
 export const aiExtractions = db.collection<AiExtractionDoc>('ai_extractions');
 

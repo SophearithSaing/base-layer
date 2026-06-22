@@ -12,7 +12,7 @@ function getRequiredEnv(key: string): string {
 
 export const env = {
   APP_ENV: Deno.env.get('APP_ENV') ?? 'dev',
-  PORT: Number(Deno.env.get('PORT')) ?? 8000,
+  PORT: Number(Deno.env.get('PORT') ?? 8000),
   CLIENT_ORIGIN: Deno.env.get('CLIENT_ORIGIN') ?? 'http://localhost:5173',
 
   MONGODB_URI: getRequiredEnv('MONGODB_URI'),
