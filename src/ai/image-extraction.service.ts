@@ -69,7 +69,7 @@ export async function extractReceiptFromImage(
       required: ['name', 'amount'],
       properties: {
         name: { type: 'string' },
-        age: { type: 'number' },
+        amount: { type: 'number' },
       },
     },
   };
