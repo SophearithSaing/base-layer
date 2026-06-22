@@ -23,3 +23,17 @@ export function preflight(req: Request): Response {
     headers: getCorsHeaders(req),
   });
 }
+
+export function addCorsHeaders(req: Request, res: Response): Response {
+  const headers = new Headers(res.headers);
+
+  getCorsHeaders(req).forEach((value, key) => {
+    headers.set(key, value);
+  });
+
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers,
+  });
+}
