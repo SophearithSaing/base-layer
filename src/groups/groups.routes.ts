@@ -1,8 +1,15 @@
 import { requireUser } from '../auth/require-user.ts';
 import { Route } from '../routes.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';
-import { validateCreateGroup, validateUpdateGroup } from './group-validation.ts';
-import { createGroup, getGroupByCreatorId, updateGroup } from './groups.service.ts';
+import {
+  validateCreateGroup,
+  validateUpdateGroup,
+} from './group-validation.ts';
+import {
+  createGroup,
+  getGroupByCreatorId,
+  updateGroup,
+} from './groups.service.ts';
 
 export const groupRoutes: Route[] = [
   {
