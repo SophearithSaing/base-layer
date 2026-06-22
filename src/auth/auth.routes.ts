@@ -6,14 +6,14 @@ import {
   findValidRefreshToken,
   revokeRefreshToken,
   saveRefreshToken,
-} from './refreshTokens.ts';
+} from './refresh-tokens.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';
 import { clearCookie, getCookie, serializeCookie } from '../shared/cookies.ts';
-import { requireUser } from './requireUser.ts';
+import { requireUser } from './require-user.ts';
 import { hashPassword, verifyPassword } from './password.ts';
 import { HttpError } from '../shared/http.ts';
 import { Route } from '../routes.ts';
-import { validateAuthInput } from './authValidation.ts';
+import { validateAuthInput } from './auth-validation.ts';
 type AuthRequestPayload = {
   email: string;
   password: string;

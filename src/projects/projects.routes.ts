@@ -1,4 +1,4 @@
-import { requireUser } from '../auth/requireUser.ts';
+import { requireUser } from '../auth/require-user.ts';
 import { Route } from '../routes.ts';
 import { HttpMethod, json, readJson } from '../shared/http.ts';
 import {
@@ -12,7 +12,7 @@ import {
 import {
   validateCreateProject,
   validateUpdateProject,
-} from './projectValidation.ts';
+} from './project-validation.ts';
 
 export const projectRoutes: Route[] = [
   {

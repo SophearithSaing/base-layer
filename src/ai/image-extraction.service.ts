@@ -1,5 +1,5 @@
 import { ObjectId, WithId } from 'mongodb';
-import { toObjectId } from '../shared/objectId.ts';
+import { toObjectId } from '../shared/object-id.ts';
 import { AiExtractionDoc, aiExtractions } from '../db/collections.ts';
 import { together } from './together.ts';
 

@@ -1,7 +1,7 @@
 import { InsertOneResult, ObjectId, WithId } from 'mongodb';
 import { ProjectDoc, projects } from '../db/collections.ts';
 import { HttpError } from '../shared/http.ts';
-import { toObjectId } from '../shared/objectId.ts';
+import { toObjectId } from '../shared/object-id.ts';
 
 export type ProjectPayload = {
   name: string;
