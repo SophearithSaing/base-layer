@@ -2,10 +2,18 @@
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-sys --allow-ffi src/main.ts",
     "start": "deno run --allow-net --allow-env --allow-read --allow-write --allow-sys --allow-ffi src/main.ts",
-    "check": "deno check src/main.ts"
+    "check": "deno check src/main.ts",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "test": "deno test --allow-env --allow-read --allow-sys --allow-ffi"
+  },
+  "fmt": {
+    "singleQuote": true,
+    "exclude": [".zed/settings.json"]
   },
   "imports": {
     "@felix/argon2": "jsr:@felix/argon2@^3.0.5",
+    "@std/assert": "jsr:@std/assert",
     "@std/dotenv": "jsr:@std/dotenv",
     "mongodb": "npm:mongodb@6",
     "jose": "npm:jose",
