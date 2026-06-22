@@ -24,7 +24,7 @@ export function serializeCookie(
   }
 
   if (options.sameSite) {
-    parts.push(options.sameSite);
+    parts.push(`SameSite=${options.sameSite}`);
   }
 
   if (options.path) {
