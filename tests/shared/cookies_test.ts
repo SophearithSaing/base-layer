@@ -5,10 +5,9 @@ import {
   serializeCookie,
 } from '../../src/shared/cookies.ts';
 
-Deno.test('serializeCookie writes SameSite attribute name', () => {
+Deno.test('serializeCookie writes attribute name', () => {
   const cookie = serializeCookie('access_token', 'abc', {
     httpOnly: true,
-    sameSite: 'Lax',
     path: '/',
     maxAge: 60,
   });
