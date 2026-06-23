@@ -151,7 +151,6 @@ async function issueAuthResponse(
     'Set-Cookie',
     serializeCookie('access_token', accessToken, {
       httpOnly: true,
-      sameSite: 'None',
       path: '/',
       maxAge: ACCESS_MAX_AGE,
     }),
@@ -160,7 +159,6 @@ async function issueAuthResponse(
     'Set-Cookie',
     serializeCookie('refresh_token', refreshToken, {
       httpOnly: true,
-      sameSite: 'None',
       path: '/auth/refresh',
       maxAge: REFRESH_MAX_AGE,
     }),

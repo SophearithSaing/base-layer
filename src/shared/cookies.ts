@@ -1,9 +1,10 @@
-const isProd = Deno.env.get('APP_ENV') === 'prod';
+import { env } from '../config/env.ts';
+
+const isProd = env.APP_ENV === 'prod';
 
 type CookieOptions = {
   httpOnly?: boolean;
   secure?: boolean;
-  sameSite?: 'Lax' | 'Strict' | 'None';
   path?: string;
   maxAge?: number;
 };
@@ -15,16 +16,14 @@ export function serializeCookie(
 ): string {
   const parts = [`${name}=${value}`];
 
+  parts.push(`SameSite=${isProd ? 'None' : 'Lax'}`);
+
   if (options.httpOnly) {
     parts.push('HttpOnly');
   }
 
   if (options.secure ?? isProd) {
     parts.push('Secure');
-  }
-
-  if (options.sameSite) {
-    parts.push(`SameSite=${options.sameSite}`);
   }
 
   if (options.path) {
@@ -43,7 +42,6 @@ export function clearCookie(name: string, path = '/'): string {
     path,
     maxAge: 0,
     httpOnly: true,
-    sameSite: 'Lax',
   });
 }
 
