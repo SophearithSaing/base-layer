@@ -18,6 +18,10 @@ export type ProjectProgressPayload = Omit<
   '_id' | 'userId' | 'createdAt' | 'updatedAt'
 >;
 
+export type ProjectProgressResponse = ProjectProgressDoc & {
+  project: ProjectDoc;
+};
+
 export async function listProjects(): Promise<WithId<ProjectDoc>[]> {
   return await projects.find().toArray();
 }
@@ -89,14 +93,53 @@ export async function startProject(
   payload: ProjectProgressPayload,
 ): Promise<InsertOneResult<ProjectProgressDoc>> {
   const now = new Date();
+  const project = await projects.findOne({
+    _id: toObjectId(payload.projectId),
+  });
+
+  if (!project) {
+    throw new HttpError('Project not found', 404);
+  }
 
   return await projectProgresses.insertOne({
     ...payload,
     _id: new ObjectId(),
     userId: toObjectId(userId),
+    title: project.title,
+    description: project.description,
     createdAt: now,
     updatedAt: now,
   });
+}
+
+export async function listProjectProgresses(
+  userId: string,
+): Promise<ProjectProgressDoc[]> {
+  return await projectProgresses.find({ userId: toObjectId(userId) }).toArray();
+}
+
+export async function getProjectProgress(
+  userId: string,
+  projectProgressId: string,
+): Promise<ProjectProgressResponse> {
+  const projectProgress = await projectProgresses.findOne({
+    _id: toObjectId(projectProgressId),
+    userId: toObjectId(userId),
+  });
+
+  if (!projectProgress) {
+    throw new HttpError('Project progress not found', 404);
+  }
+
+  const project = await projects.findOne({
+    _id: toObjectId(projectProgress.projectId),
+  });
+
+  if (!project) {
+    throw new HttpError('Project not found', 404);
+  }
+
+  return { ...projectProgress, project };
 }
 
 export async function updateProjectProgress(

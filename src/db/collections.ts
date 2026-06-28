@@ -59,6 +59,9 @@ export type ProjectProgressDoc = {
   _id: ObjectId;
   userId: ObjectId;
   projectId: ObjectId;
+  title: string;
+  description: string;
+  progress: number;
   notes: Record<
     string,
     {
