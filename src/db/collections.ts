@@ -3,7 +3,7 @@ import { db } from './mongo.ts';
 
 export type UserDoc = {
   _id: ObjectId;
-  email: string;
+  username: string;
   passwordHash: string;
   createdAt: Date;
   updatedAt: Date;
@@ -108,7 +108,7 @@ export const aiMessages = db.collection<AiMessageDoc>('ai_messages');
 export const aiExtractions = db.collection<AiExtractionDoc>('ai_extractions');
 
 export async function ensureIndexes() {
-  await users.createIndex({ email: 1 }, { unique: true });
+  await users.createIndex({ username: 1 }, { unique: true });
 
   await refreshTokens.createIndex({ tokenLookupHash: 1 }, { unique: true });
   await refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });

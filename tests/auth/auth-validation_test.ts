@@ -2,30 +2,21 @@ import { assertEquals, assertThrows } from '@std/assert';
 import { validateAuthInput } from '../../src/auth/auth-validation.ts';
 import { HttpError } from '../../src/shared/http.ts';
 
-Deno.test('validateAuthInput normalizes email', () => {
+Deno.test('validateAuthInput normalizes username', () => {
   const result = validateAuthInput({
-    email: '  USER@Example.COM  ',
+    username: '  USER_Example  ',
     password: 'password123',
   });
 
   assertEquals(result, {
-    email: 'user@example.com',
+    username: 'user_example',
     password: 'password123',
   });
 });
 
-Deno.test('validateAuthInput rejects invalid email', () => {
-  const error = assertThrows(
-    () => validateAuthInput({ email: 'invalid', password: 'password123' }),
-    HttpError,
-  );
-
-  assertEquals(error.status, 400);
-});
-
 Deno.test('validateAuthInput rejects short password', () => {
   const error = assertThrows(
-    () => validateAuthInput({ email: 'user@example.com', password: 'short' }),
+    () => validateAuthInput({ username: 'user', password: 'short' }),
     HttpError,
   );
 
