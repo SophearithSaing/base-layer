@@ -5,7 +5,7 @@ const secret = new TextEncoder().encode(env.JWT_SECRET);
 
 export type AccessTokenPayload = {
   userId: string;
-  email: string;
+  username: string;
 };
 
 export async function signAccessToken(

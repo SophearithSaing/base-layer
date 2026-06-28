@@ -1,13 +1,13 @@
 import { HttpError } from '../shared/http.ts';
 
 type AuthInput = {
-  email?: unknown;
+  username?: unknown;
   password?: unknown;
 };
 
 export function validateAuthInput(data: AuthInput) {
-  if (typeof data.email !== 'string' || !data.email.includes('@')) {
-    throw new HttpError('Valid email is required', 400);
+  if (typeof data.username !== 'string') {
+    throw new HttpError('Valid username is required', 400);
   }
 
   if (typeof data.password !== 'string' || data.password.length < 8) {
@@ -15,7 +15,7 @@ export function validateAuthInput(data: AuthInput) {
   }
 
   return {
-    email: data.email.trim().toLowerCase(),
+    username: data.username.trim().toLowerCase(),
     password: data.password,
   };
 }

@@ -15,7 +15,7 @@ import { HttpError } from '../shared/http.ts';
 import { Route } from '../routes.ts';
 import { validateAuthInput } from './auth-validation.ts';
 type AuthRequestPayload = {
-  email: string;
+  username: string;
   password: string;
 };
 
@@ -52,11 +52,11 @@ export const authRoutes: Route[] = [
 
 async function register(req: Request): Promise<Response> {
   const payload = await readJson<AuthRequestPayload>(req);
-  const { email, password } = validateAuthInput(payload);
-  const existing = await users.findOne({ email });
+  const { username, password } = validateAuthInput(payload);
+  const existing = await users.findOne({ username });
 
   if (existing) {
-    throw new HttpError('Email is already registered', 409);
+    throw new HttpError('Username is already registered', 409);
   }
 
   const now = new Date();
@@ -64,19 +64,19 @@ async function register(req: Request): Promise<Response> {
 
   await users.insertOne({
     _id: userId,
-    email,
+    username,
     passwordHash: await hashPassword(password),
     createdAt: now,
     updatedAt: now,
   });
 
-  return issueAuthResponse(userId, email);
+  return issueAuthResponse(userId, username);
 }
 
 async function login(req: Request): Promise<Response> {
   const payload = await readJson<AuthRequestPayload>(req);
-  const { email, password } = validateAuthInput(payload);
-  const user = await users.findOne({ email });
+  const { username, password } = validateAuthInput(payload);
+  const user = await users.findOne({ username });
 
   if (!user) {
     throw new HttpError('Invalid credentials', 401);
@@ -87,7 +87,7 @@ async function login(req: Request): Promise<Response> {
     throw new HttpError('Invalid credentials', 401);
   }
 
-  return issueAuthResponse(user._id, email);
+  return issueAuthResponse(user._id, username);
 }
 
 async function refresh(req: Request): Promise<Response> {
@@ -108,7 +108,7 @@ async function refresh(req: Request): Promise<Response> {
     throw new HttpError('Unauthorized', 401);
   }
 
-  return issueAuthResponse(user._id, user.email);
+  return issueAuthResponse(user._id, user.username);
 }
 
 async function logout(req: Request): Promise<Response> {
@@ -136,11 +136,11 @@ async function me(req: Request): Promise<Response> {
 
 async function issueAuthResponse(
   userId: ObjectId,
-  email: string,
+  username: string,
 ): Promise<Response> {
   const accessToken = await signAccessToken({
     userId: userId.toString(),
-    email,
+    username,
   });
 
   const refreshToken = createRefreshToken();
@@ -164,5 +164,5 @@ async function issueAuthResponse(
     }),
   );
 
-  return json({ user: { id: userId.toString(), email } }, { headers });
+  return json({ user: { id: userId.toString(), username } }, { headers });
 }
