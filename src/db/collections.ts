@@ -21,9 +21,36 @@ export type RefreshTokenDoc = {
 
 export type ProjectDoc = {
   _id: ObjectId;
-  userId: ObjectId;
-  name: string;
-  description?: string;
+  title: string;
+  description: string;
+  legend: {
+    difficulty: Record<string, string>;
+    type: Record<string, string>;
+  };
+  phases: Array<{
+    id: string;
+    title: string;
+    type: string;
+    difficulty: number;
+    summary: string;
+    conceptsToKnow: string[];
+    toolsToLearn: string[];
+    practiceLabs: string[];
+    masteryChecks: string[];
+    prerequisites: string[];
+  }>;
+  capstones: Array<{
+    id: string;
+    title: string;
+    difficulty: number;
+    summary: string;
+    build: string[];
+    conceptsToKnow: string;
+    toolsToLearn: string[];
+    prerequisites: string[];
+  }>;
+  recommendedOrder: string[];
+  masteryDefinitions: string[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -69,8 +96,6 @@ export async function ensureIndexes() {
   await refreshTokens.createIndex({ tokenLookupHash: 1 }, { unique: true });
   await refreshTokens.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
   await refreshTokens.createIndex({ userId: 1 });
-
-  await projects.createIndex({ userId: 1 });
 
   await aiExtractions.createIndex({ userId: 1, createdAt: -1 });
 }
