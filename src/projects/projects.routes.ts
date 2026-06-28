@@ -7,7 +7,10 @@ import {
   getProject,
   listProjects,
   ProjectPayload,
+  ProjectProgressPayload,
+  startProject,
   updateProject,
+  updateProjectProgress,
 } from './projects.service.ts';
 import {
   validateCreateProject,
@@ -67,6 +70,32 @@ export const projectRoutes: Route[] = [
       await deleteProject(params.id);
 
       return json({ ok: true });
+    },
+  },
+  {
+    method: HttpMethod.POST,
+    pattern: new URLPattern({ pathname: '/projects/start' }),
+    handler: async (req: Request) => {
+      const user = await requireUser(req);
+      const payload = await readJson<ProjectProgressPayload>(req);
+      const project = await startProject(user.userId, payload);
+
+      return json({ project, status: 201 });
+    },
+  },
+  {
+    method: HttpMethod.PATCH,
+    pattern: new URLPattern({ pathname: '/projects/progress/:id' }),
+    handler: async (req: Request, params: Record<string, string>) => {
+      const user = await requireUser(req);
+      const payload = await readJson<ProjectProgressPayload>(req);
+      const projectProgress = await updateProjectProgress(
+        user.userId,
+        params.id,
+        payload,
+      );
+
+      return json({ projectProgress });
     },
   },
 ];

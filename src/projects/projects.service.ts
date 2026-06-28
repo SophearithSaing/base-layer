@@ -1,11 +1,21 @@
 import { InsertOneResult, ObjectId, WithId } from 'mongodb';
-import { ProjectDoc, projects } from '../db/collections.ts';
+import {
+  ProjectDoc,
+  ProjectProgressDoc,
+  projectProgresses,
+  projects,
+} from '../db/collections.ts';
 import { HttpError } from '../shared/http.ts';
 import { toObjectId } from '../shared/object-id.ts';
 
 export type ProjectPayload = Omit<
   ProjectDoc,
   '_id' | 'createdAt' | 'updatedAt'
+>;
+
+export type ProjectProgressPayload = Omit<
+  ProjectProgressDoc,
+  '_id' | 'userId' | 'createdAt' | 'updatedAt'
 >;
 
 export async function listProjects(): Promise<WithId<ProjectDoc>[]> {
@@ -72,4 +82,44 @@ export async function deleteProject(projectId: string): Promise<boolean> {
   }
 
   return result.deletedCount === 1;
+}
+
+export async function startProject(
+  userId: string,
+  payload: ProjectProgressPayload,
+): Promise<InsertOneResult<ProjectProgressDoc>> {
+  const now = new Date();
+
+  return await projectProgresses.insertOne({
+    ...payload,
+    _id: new ObjectId(),
+    userId: toObjectId(userId),
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
+export async function updateProjectProgress(
+  userId: string,
+  projectProgressId: string,
+  payload: ProjectProgressPayload,
+): Promise<WithId<ProjectProgressDoc>> {
+  const result = await projectProgresses.findOneAndUpdate(
+    {
+      _id: toObjectId(projectProgressId),
+      userId: toObjectId(userId),
+    },
+    {
+      $set: { ...payload, updatedAt: new Date() },
+    },
+    {
+      returnDocument: 'after',
+    },
+  );
+
+  if (!result) {
+    throw new HttpError('Project progress not found', 404);
+  }
+
+  return result;
 }
