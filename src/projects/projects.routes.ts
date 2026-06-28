@@ -19,8 +19,8 @@ export const projectRoutes: Route[] = [
     method: HttpMethod.GET,
     pattern: new URLPattern({ pathname: '/projects' }),
     handler: async (req: Request) => {
-      const user = await requireUser(req);
-      const projects = await listProjects(user.userId);
+      await requireUser(req);
+      const projects = await listProjects();
 
       return json({ projects });
     },
@@ -29,10 +29,10 @@ export const projectRoutes: Route[] = [
     method: HttpMethod.POST,
     pattern: new URLPattern({ pathname: '/projects/create' }),
     handler: async (req: Request) => {
-      const user = await requireUser(req);
+      await requireUser(req);
       const payload = await readJson<ProjectPayload>(req);
       validateCreateProject(payload);
-      const project = await createProject(user.userId, payload);
+      const project = await createProject(payload);
 
       return json({ project }, { status: 201 });
     },
@@ -41,8 +41,8 @@ export const projectRoutes: Route[] = [
     method: HttpMethod.GET,
     pattern: new URLPattern({ pathname: '/projects/:id' }),
     handler: async (req: Request, params: Record<string, string>) => {
-      const user = await requireUser(req);
-      const project = await getProject(user.userId, params.id);
+      await requireUser(req);
+      const project = await getProject(params.id);
 
       return json({ project });
     },
@@ -51,10 +51,10 @@ export const projectRoutes: Route[] = [
     method: HttpMethod.PATCH,
     pattern: new URLPattern({ pathname: '/projects/:id' }),
     handler: async (req: Request, params: Record<string, string>) => {
-      const user = await requireUser(req);
+      await requireUser(req);
       const payload = await readJson<ProjectPayload>(req);
       validateUpdateProject(payload);
-      const project = await updateProject(user.userId, params.id, payload);
+      const project = await updateProject(params.id, payload);
 
       return json({ project });
     },
@@ -63,8 +63,8 @@ export const projectRoutes: Route[] = [
     method: HttpMethod.DELETE,
     pattern: new URLPattern({ pathname: '/projects/:id' }),
     handler: async (req: Request, params: Record<string, string>) => {
-      const user = await requireUser(req);
-      await deleteProject(user.userId, params.id);
+      await requireUser(req);
+      await deleteProject(params.id);
 
       return json({ ok: true });
     },

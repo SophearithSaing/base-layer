@@ -3,40 +3,33 @@ import { ProjectDoc, projects } from '../db/collections.ts';
 import { HttpError } from '../shared/http.ts';
 import { toObjectId } from '../shared/object-id.ts';
 
-export type ProjectPayload = {
-  name: string;
-  description: string;
-};
+export type ProjectPayload = Omit<
+  ProjectDoc,
+  '_id' | 'createdAt' | 'updatedAt'
+>;
 
-export async function listProjects(
-  userId: string,
-): Promise<WithId<ProjectDoc>[]> {
-  return await projects.find({ userId: new ObjectId(userId) }).toArray();
+export async function listProjects(): Promise<WithId<ProjectDoc>[]> {
+  return await projects.find().toArray();
 }
 
 export async function createProject(
-  userId: string,
   payload: ProjectPayload,
 ): Promise<InsertOneResult<ProjectDoc>> {
   const now = new Date();
 
   return await projects.insertOne({
+    ...payload,
     _id: new ObjectId(),
-    userId: toObjectId(userId),
-    name: payload.name,
-    description: payload.description,
     createdAt: now,
     updatedAt: now,
   });
 }
 
 export async function getProject(
-  userId: string,
   projectId: string,
 ): Promise<WithId<ProjectDoc>> {
   const project = await projects.findOne({
     _id: toObjectId(projectId),
-    userId: toObjectId(userId),
   });
 
   if (!project) {
@@ -47,14 +40,12 @@ export async function getProject(
 }
 
 export async function updateProject(
-  userId: string,
   projectId: string,
   payload: ProjectPayload,
 ): Promise<WithId<ProjectDoc>> {
   const result = await projects.findOneAndUpdate(
     {
       _id: toObjectId(projectId),
-      userId: toObjectId(userId),
     },
     {
       $set: { ...payload, updatedAt: new Date() },
@@ -71,13 +62,9 @@ export async function updateProject(
   return result;
 }
 
-export async function deleteProject(
-  userId: string,
-  projectId: string,
-): Promise<boolean> {
+export async function deleteProject(projectId: string): Promise<boolean> {
   const result = await projects.deleteOne({
     _id: toObjectId(projectId),
-    userId: toObjectId(userId),
   });
 
   if (!result.deletedCount) {

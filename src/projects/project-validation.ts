@@ -1,20 +1,16 @@
 import { HttpError } from '../shared/http.ts';
-
-type ProjectPayload = {
-  name?: unknown;
-  description?: unknown;
-};
+import { ProjectPayload } from './projects.service.ts';
 
 export function validateCreateProject(data: ProjectPayload) {
-  if (typeof data.name !== 'string' || data.name.trim().length === 0) {
-    throw new HttpError('Project name is required', 400);
+  if (typeof data.title !== 'string' || data.title.trim().length === 0) {
+    throw new HttpError('Project title is required', 400);
   }
 }
 
 export function validateUpdateProject(data: ProjectPayload) {
-  if (data.name !== undefined) {
-    if (typeof data.name !== 'string' || data.name.trim().length === 0) {
-      throw new HttpError('Project name cannot be empty', 400);
+  if (data.title !== undefined) {
+    if (typeof data.title !== 'string' || data.title.trim().length === 0) {
+      throw new HttpError('Project title cannot be empty', 400);
     }
   }
 
