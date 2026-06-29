@@ -107,6 +107,7 @@ export async function startProject(
     userId: toObjectId(userId),
     title: project.title,
     description: project.description,
+    progress: 0,
     createdAt: now,
     updatedAt: now,
   });
