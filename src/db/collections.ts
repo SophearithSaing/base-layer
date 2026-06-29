@@ -19,6 +19,12 @@ export type RefreshTokenDoc = {
   createdAt: Date;
 };
 
+type Item = {
+  id: string;
+  title: string;
+  description: string;
+};
+
 export type ProjectDoc = {
   _id: ObjectId;
   title: string;
@@ -33,9 +39,9 @@ export type ProjectDoc = {
     type: string;
     difficulty: number;
     summary: string;
-    conceptsToKnow: string[];
-    toolsToLearn: string[];
-    practiceLabs: string[];
+    conceptsToKnow: Item[];
+    toolsToLearn: Item[];
+    practiceLabs: Item[];
     masteryChecks: string[];
     prerequisites: string[];
   }>;
@@ -45,8 +51,8 @@ export type ProjectDoc = {
     difficulty: number;
     summary: string;
     build: string[];
-    conceptsToKnow: string;
-    toolsToLearn: string[];
+    conceptsToKnow: Item[];
+    toolsToLearn: Item[];
     prerequisites: string[];
   }>;
   recommendedOrder: string[];
