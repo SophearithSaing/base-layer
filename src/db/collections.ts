@@ -39,9 +39,9 @@ export type ProjectDoc = {
     type: string;
     difficulty: number;
     summary: string;
-    conceptsToKnow: Item[];
-    toolsToLearn: Item[];
-    practiceLabs: Item[];
+    concepts: Item[];
+    tools: Item[];
+    practice: Item[];
     masteryChecks: string[];
     prerequisites: string[];
   }>;
@@ -51,8 +51,8 @@ export type ProjectDoc = {
     difficulty: number;
     summary: string;
     build: string[];
-    conceptsToKnow: Item[];
-    toolsToLearn: Item[];
+    concepts: Item[];
+    tools: Item[];
     prerequisites: string[];
   }>;
   recommendedOrder: string[];
