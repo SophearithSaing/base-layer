@@ -71,7 +71,7 @@ export type ProjectProgressDoc = {
   notes: Record<
     string,
     {
-      notes: string[];
+      notes: { text: string; timestamp: Date }[];
       links: { text: string; url: string }[];
     }
   >;
