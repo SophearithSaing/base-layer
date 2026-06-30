@@ -1,12 +1,14 @@
 import { env } from '../config/env.ts';
 
-const allowedOrigin = [env.CLIENT_ORIGIN];
+const allowedOrigins = env.CLIENT_ORIGINS.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 export function getCorsHeaders(req: Request): Headers {
   const headers = new Headers();
   const origin = req.headers.get('origin');
 
-  if (origin && allowedOrigin.includes(origin)) {
+  if (origin && allowedOrigins.includes(origin)) {
     headers.set('Access-Control-Allow-Origin', origin);
     headers.set('Access-Control-Allow-Credentials', 'true');
   }

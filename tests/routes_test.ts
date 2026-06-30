@@ -3,7 +3,10 @@ import { assertEquals } from '@std/assert';
 async function importRouter() {
   Deno.env.set('MONGODB_URI', 'mongodb://localhost:27017');
   Deno.env.set('JWT_SECRET', 'test-secret-at-least-32-characters');
-  Deno.env.set('CLIENT_ORIGIN', 'http://localhost:5173');
+  Deno.env.set(
+    'CLIENT_ORIGINS',
+    'http://localhost:5173, http://localhost:3000',
+  );
 
   return await import('../src/routes.ts');
 }
@@ -20,6 +23,21 @@ Deno.test('router adds CORS headers to successful responses', async () => {
   assertEquals(
     res.headers.get('access-control-allow-origin'),
     'http://localhost:5173',
+  );
+});
+
+Deno.test('router allows another configured CORS origin', async () => {
+  const { router } = await importRouter();
+  const res = await router(
+    new Request('http://localhost:8000/', {
+      headers: { origin: 'http://localhost:3000' },
+    }),
+  );
+
+  assertEquals(res.status, 200);
+  assertEquals(
+    res.headers.get('access-control-allow-origin'),
+    'http://localhost:3000',
   );
 });
 
