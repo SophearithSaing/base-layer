@@ -107,6 +107,7 @@ export async function startProject(
     userId: toObjectId(userId),
     title: project.title,
     description: project.description,
+    progress: 0,
     createdAt: now,
     updatedAt: now,
   });
@@ -165,4 +166,62 @@ export async function updateProjectProgress(
   }
 
   return result;
+}
+
+export async function updateCompletedItems(
+  userId: string,
+  projectProgressId: string,
+  payload: Record<string, boolean>,
+) {
+  const projectProgress = await projectProgresses.findOne({
+    _id: toObjectId(projectProgressId),
+    userId: toObjectId(userId),
+  });
+
+  if (!projectProgress) {
+    throw new HttpError('Project progress not found', 404);
+  }
+
+  const project = await projects.findOne({
+    _id: toObjectId(projectProgress.projectId),
+  });
+
+  if (!project) {
+    throw new HttpError('Project not found', 404);
+  }
+
+  const completedItems = {
+    ...(projectProgress.completedItems ?? {}),
+    ...payload,
+  };
+  const phaseTasks = project.phases.reduce(
+    (acc, curr) =>
+      acc + curr.concepts.length + curr.tools.length + curr.practice.length,
+    0,
+  );
+  const capstoneTasks = project.capstones.reduce(
+    (acc, curr) =>
+      acc + curr.build.length + curr.concepts.length + curr.tools.length,
+    0,
+  );
+  const totalTasks = phaseTasks + capstoneTasks;
+  const completedTasks = Object.values(completedItems).filter(Boolean).length;
+  const progress = Math.round((completedTasks / totalTasks) * 100);
+  const updatedFields = { completedItems, progress, updatedAt: new Date() };
+
+  const result = await projectProgresses.updateOne(
+    {
+      _id: toObjectId(projectProgressId),
+      userId: toObjectId(userId),
+    },
+    {
+      $set: updatedFields,
+    },
+  );
+
+  if (result.modifiedCount !== 1) {
+    throw new HttpError('Failed to update completed items', 500);
+  }
+
+  return { ...projectProgress, ...updatedFields };
 }

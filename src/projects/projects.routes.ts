@@ -11,6 +11,7 @@ import {
   ProjectPayload,
   ProjectProgressPayload,
   startProject,
+  updateCompletedItems,
   updateProject,
   updateProjectProgress,
 } from './projects.service.ts';
@@ -80,6 +81,23 @@ export const projectRoutes: Route[] = [
       const user = await requireUser(req);
       const payload = await readJson<ProjectProgressPayload>(req);
       const projectProgress = await updateProjectProgress(
+        user.userId,
+        params.id,
+        payload,
+      );
+
+      return json({ projectProgress });
+    },
+  },
+  {
+    method: HttpMethod.PATCH,
+    pattern: new URLPattern({
+      pathname: '/projects/progress/:id/completed-items',
+    }),
+    handler: async (req: Request, params: Record<string, string>) => {
+      const user = await requireUser(req);
+      const payload = await readJson<Record<string, boolean>>(req);
+      const projectProgress = await updateCompletedItems(
         user.userId,
         params.id,
         payload,
