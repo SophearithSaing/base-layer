@@ -67,6 +67,7 @@ export type ProjectProgressDoc = {
   projectId: ObjectId;
   title: string;
   description: string;
+  completedItems: Record<string, boolean>;
   progress: number;
   notes: Record<
     string,
