@@ -7,21 +7,19 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 )
 
 func main() {
-	portValue := config.GetEnv("PORT", "8000")
-	port, err := strconv.ParseInt(portValue, 10, 32)
-	if port < 1 || port > 65535 {
-		fmt.Println("invalid port " + portValue)
+	port, err := config.GetPort()
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	mux := http.NewServeMux()
 	server := &http.Server{
-		Addr:         ":" + portValue,
+		Addr:         ":" + port,
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -29,7 +27,7 @@ func main() {
 
 	api.HandleRoutes(mux)
 
-	fmt.Println("Listening on port " + portValue)
+	fmt.Println("Listening on port " + port)
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

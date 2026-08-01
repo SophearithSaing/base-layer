@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
 
 func GetEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
@@ -8,4 +12,18 @@ func GetEnv(key, fallback string) string {
 	} else {
 		return fallback
 	}
+}
+
+func GetPort() (string, error) {
+	portValue := GetEnv("PORT", "8000")
+	port, err := strconv.ParseInt(portValue, 10, 32)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse port: %v", err)
+	}
+
+	if port < 1 || port > 65535 {
+		return "", fmt.Errorf("invalid port: %d", port)
+	}
+
+	return portValue, nil
 }
