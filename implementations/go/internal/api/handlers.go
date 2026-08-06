@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -17,34 +15,31 @@ type HealthResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+type BasicResponse struct {
+	Message string `json:"message"`
+}
+
 func HandleRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 		data := RootResponse{
 			Name:   "BaseLayer",
 			Status: "ok",
 		}
-		err := json.NewEncoder(w).Encode(data)
-		if err != nil {
-			fmt.Println(err)
-		}
+		JSONResponseWriter(w, http.StatusOK, data)
 	})
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 		data := HealthResponse{
 			Ok:        true,
 			Timestamp: time.Now().UTC(),
 		}
-		err := json.NewEncoder(w).Encode(data)
-		if err != nil {
-			fmt.Println(err)
-		}
+		JSONResponseWriter(w, http.StatusOK, data)
 	})
 
 	mux.HandleFunc("/{path...}", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "route not found", http.StatusNotFound)
+		data := BasicResponse{
+			Message: "Route not found",
+		}
+		JSONResponseWriter(w, http.StatusNotFound, data)
 	})
 }
