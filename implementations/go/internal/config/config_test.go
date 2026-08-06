@@ -66,3 +66,64 @@ func TestGetPort(t *testing.T) {
 		})
 	}
 }
+
+func TestGetMongoDBConfig(t *testing.T) {
+	tests := []struct {
+		name         string
+		negativeTest bool
+		uri          string
+		dbName       string
+	}{
+		{
+			name:         "invalid uri",
+			negativeTest: true,
+		},
+		{
+			name:         "valid uri, default db name",
+			negativeTest: false,
+			uri:          "http://localhost:27017",
+		},
+		{
+			name:         "valid uri, valid db name",
+			negativeTest: false,
+			uri:          "http://localhost:27017",
+			dbName:       "nextLayer",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("MONGODB_URI", tt.uri)
+			if tt.dbName != "" {
+				t.Setenv("MONGODB_DB_NAME", tt.dbName)
+			}
+
+			mongoDBConfig, err := GetMongoDBConfig()
+
+			if tt.negativeTest {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("expect no error, got %v", err)
+			}
+
+			if mongoDBConfig.URI != tt.uri {
+				t.Errorf("expect %v, got %v", tt.uri, mongoDBConfig.URI)
+			}
+
+			if tt.dbName == "" {
+				if mongoDBConfig.DBName != "baselayer" {
+					t.Errorf("expect baselayer, got %v", mongoDBConfig.DBName)
+				}
+			} else {
+				if mongoDBConfig.DBName != tt.dbName {
+					t.Errorf("expect %v, got %v", tt.dbName, mongoDBConfig.DBName)
+				}
+			}
+		})
+	}
+}
