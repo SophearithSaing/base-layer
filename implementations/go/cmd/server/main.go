@@ -17,6 +17,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	mongodbConfig, err := config.GetMongoDBConfig()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	allowedOrigins, err := config.GetClientOrigins()
 	if err != nil {
 		fmt.Println(err)
