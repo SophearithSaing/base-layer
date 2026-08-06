@@ -1,0 +1,16 @@
+package api
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func JSONResponseWriter[T any](w http.ResponseWriter, statusCode int, data T) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
