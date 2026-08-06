@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func GetEnv(key, fallback string) string {
@@ -26,4 +27,22 @@ func GetPort() (string, error) {
 	}
 
 	return portValue, nil
+}
+
+func GetClientOrigins() ([]string, error) {
+	clientOrigins := GetEnv("CLIENT_ORIGINS", "http://localhost:5173")
+
+	if clientOrigins == "" {
+		return nil, fmt.Errorf("no client origin found")
+	}
+
+	var origins []string
+	for origin := range strings.SplitSeq(clientOrigins, ",") {
+		origin = strings.TrimSpace(origin)
+		if origin != "" {
+			origins = append(origins, origin)
+		}
+	}
+
+	return origins, nil
 }

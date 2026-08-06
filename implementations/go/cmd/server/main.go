@@ -17,10 +17,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	allowedOrigins, err := config.GetClientOrigins()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
-		Handler:      mux,
+		Handler:      api.Cors(mux, allowedOrigins),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

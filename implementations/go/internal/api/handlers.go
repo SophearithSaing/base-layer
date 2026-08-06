@@ -7,13 +7,23 @@ import (
 	"time"
 )
 
+type RootResponse struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+}
+
+type HealthResponse struct {
+	Ok        bool      `json:"ok"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 func HandleRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		data := map[string]string{
-			"name":   "BaseLayer",
-			"status": "ok",
+		data := RootResponse{
+			Name:   "BaseLayer",
+			Status: "ok",
 		}
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
@@ -24,9 +34,9 @@ func HandleRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		data := map[string]any{
-			"ok":        true,
-			"timestamp": time.Now().UTC(),
+		data := HealthResponse{
+			Ok:        true,
+			Timestamp: time.Now().UTC(),
 		}
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
