@@ -5,10 +5,13 @@ import (
 	"baselayer/internal/config"
 	"baselayer/internal/db"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -20,6 +23,9 @@ func main() {
 }
 
 func run() error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	port, err := config.GetPort()
 	if err != nil {
 		return fmt.Errorf("error getting port: %w", err)
@@ -59,10 +65,30 @@ func run() error {
 
 	api.HandleRoutes(mux)
 
-	log.Printf("listening on port: %v", port)
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("server failed: %w", err)
+	serverErr := make(chan error, 1)
+
+	go func() {
+		log.Printf("listening on port: %v", port)
+		serverErr <- server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-serverErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("server failed: %w", err)
+		}
+	case <-ctx.Done():
+		log.Printf("shutdown signal received")
 	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("shutdown server: %w", err)
+	}
+
+	log.Printf("server shutdown complete")
 
 	return nil
 }
