@@ -3,25 +3,57 @@ package main
 import (
 	"baselayer/internal/api"
 	"baselayer/internal/config"
+	"baselayer/internal/db"
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Printf("application error: %v", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	port, err := config.GetPort()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return fmt.Errorf("error getting port: %w", err)
 	}
 
 	allowedOrigins, err := config.GetClientOrigins()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return fmt.Errorf("error getting allowed origins: %w", err)
 	}
+
+	mongodbConfig, err := config.GetMongoDBConfig()
+	if err != nil {
+		return fmt.Errorf("error getting mongodb config: %w", err)
+	}
+
+	mongo, err := db.NewMongo(mongodbConfig)
+	if err != nil {
+		return fmt.Errorf("error initializing mongodb: %w", err)
+	}
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := mongo.Close(ctx); err != nil {
+			log.Printf("error closing connection: %v", err)
+		}
+	}()
+	log.Printf("db connected: %v", mongo.DB.Name())
 
 	mux := http.NewServeMux()
 	server := &http.Server{
@@ -33,9 +65,30 @@ func main() {
 
 	api.HandleRoutes(mux)
 
-	fmt.Println("Listening on port " + port)
-	err = server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
+	serverErr := make(chan error, 1)
+
+	go func() {
+		log.Printf("listening on port: %v", port)
+		serverErr <- server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-serverErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("server failed: %w", err)
+		}
+	case <-ctx.Done():
+		log.Printf("shutdown signal received")
 	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("shutdown server: %w", err)
+	}
+
+	log.Printf("server shutdown complete")
+
+	return nil
 }

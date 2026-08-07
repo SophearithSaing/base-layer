@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -45,4 +46,25 @@ func GetClientOrigins() ([]string, error) {
 	}
 
 	return origins, nil
+}
+
+type MongoDBConfig struct {
+	URI    string
+	DBName string
+}
+
+func GetMongoDBConfig() (MongoDBConfig, error) {
+	var mongoDBConfig MongoDBConfig
+	uri := GetEnv("MONGODB_URI", "")
+	if uri == "" {
+		return mongoDBConfig, errors.New("MONGODB_URI not found")
+	}
+
+	dbName := GetEnv("MONGODB_DB_NAME", "baselayer")
+
+	mongoDBConfig = MongoDBConfig{
+		URI:    uri,
+		DBName: dbName,
+	}
+	return mongoDBConfig, nil
 }
