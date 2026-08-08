@@ -4,7 +4,9 @@ import (
 	"baselayer/internal/user"
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -57,4 +59,15 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (user.User, e
 	} else {
 		return user.User{}, err
 	}
+}
+
+func (s *Service) signJWT(userId string) (string, error) {
+	now := time.Now()
+	claims := jwt.RegisteredClaims{
+		Subject:   userId,
+		IssuedAt:  jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	return token.SignedString(s.jwtSecret)
 }
