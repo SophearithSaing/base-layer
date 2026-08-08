@@ -36,3 +36,23 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(result)
 }
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var payload LoginPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		log.Printf("invalid payload: %v", err)
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.service.Login(r.Context(), payload)
+	if err != nil {
+		log.Printf("failed to login: %v", err)
+		http.Error(w, "failed to login", http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
+}
