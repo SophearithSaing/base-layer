@@ -16,6 +16,10 @@ type LoginPayload struct {
 	Password string `json:"password"`
 }
 
+type LoginResponse struct {
+	Success bool `json:"success"`
+}
+
 type RegisterResponse struct {
 	Id       bson.ObjectID `json:"id"`
 	Username string        `json:"username"`
