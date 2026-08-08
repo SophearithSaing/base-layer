@@ -2,8 +2,10 @@ package main
 
 import (
 	"baselayer/internal/api"
+	"baselayer/internal/auth"
 	"baselayer/internal/config"
 	"baselayer/internal/db"
+	"baselayer/internal/user"
 	"context"
 	"errors"
 	"fmt"
@@ -55,6 +57,20 @@ func run() error {
 	}()
 	log.Printf("db connected: %v", mongo.DB.Name())
 
+	jwtSecret, err := config.GetJWTSecret()
+	if err != nil {
+		return fmt.Errorf("error getting jwt secret: %w", err)
+	}
+
+	// User
+	userRepo := user.NewRepository(mongo.DB)
+	userService := user.NewService(userRepo)
+
+	// Auth
+	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
+	authService := auth.NewService(refreshTokenRepo, userService, jwtSecret)
+	authHandler := auth.NewHandler(authService)
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -64,6 +80,7 @@ func run() error {
 	}
 
 	api.HandleRoutes(mux)
+	auth.RegisterRoutes(mux, authHandler)
 
 	serverErr := make(chan error, 1)
 

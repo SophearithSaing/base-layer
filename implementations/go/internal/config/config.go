@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -57,7 +56,7 @@ func GetMongoDBConfig() (MongoDBConfig, error) {
 	var mongoDBConfig MongoDBConfig
 	uri := GetEnv("MONGODB_URI", "")
 	if uri == "" {
-		return mongoDBConfig, errors.New("MONGODB_URI not found")
+		return mongoDBConfig, fmt.Errorf("MONGODB_URI not found")
 	}
 
 	dbName := GetEnv("MONGODB_DB_NAME", "baselayer")
@@ -67,4 +66,12 @@ func GetMongoDBConfig() (MongoDBConfig, error) {
 		DBName: dbName,
 	}
 	return mongoDBConfig, nil
+}
+
+func GetJWTSecret() (string, error) {
+	secret := GetEnv("JWT_SECRET", "")
+	if len(secret) < 32 {
+		return "", fmt.Errorf("invalid jwt secret")
+	}
+	return secret, nil
 }
