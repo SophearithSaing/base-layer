@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"baselayer/internal/api"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -26,15 +27,15 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.Register(r.Context(), payload)
+	result, token, err := h.service.Register(r.Context(), payload)
 	if err != nil {
 		log.Printf("failed to register: %v", err)
 		http.Error(w, "failed to register", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(result)
+	setAuthCookie(w, token)
+	api.JSONResponseWriter(w, http.StatusCreated, result)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

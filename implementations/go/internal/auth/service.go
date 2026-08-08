@@ -24,16 +24,16 @@ func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Serv
 	}
 }
 
-func (s *Service) Register(ctx context.Context, payload RegisterPayload) (user.User, error) {
+func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	_, err := s.userService.FindOne(ctx, filter)
 	if err == nil {
-		return user.User{}, fmt.Errorf("username already exists")
+		return RegisterResponse{}, "", fmt.Errorf("username already exists")
 	}
 
 	passwordHash, err := hashPassword(payload.Password)
 	if err != nil {
-		return user.User{}, err
+		return RegisterResponse{}, "", err
 	}
 	createUserPayload := user.CreateUserPayload{
 		Username:     payload.Username,
@@ -41,9 +41,13 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (user.U
 	}
 	result, err := s.userService.Create(ctx, createUserPayload)
 	if err != nil {
-		return user.User{}, err
+		return RegisterResponse{}, "", err
 	}
-	return result, nil
+	token, err := s.signJWT(result.Id.String())
+	if err != nil {
+		return RegisterResponse{}, "", err
+	}
+	return RegisterResponse{Id: result.Id, Username: result.Username}, token, nil
 }
 
 func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, error) {
