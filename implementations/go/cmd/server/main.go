@@ -57,13 +57,18 @@ func run() error {
 	}()
 	log.Printf("db connected: %v", mongo.DB.Name())
 
+	jwtSecret, err := config.GetJWTSecret()
+	if err != nil {
+		return fmt.Errorf("error getting jwt secret: %w", err)
+	}
+
 	// User
 	userRepo := user.NewRepository(mongo.DB)
 	userService := user.NewService(userRepo)
 
 	// Auth
 	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
-	authService := auth.NewService(refreshTokenRepo, userService)
+	authService := auth.NewService(refreshTokenRepo, userService, jwtSecret)
 	authHandler := auth.NewHandler(authService)
 
 	mux := http.NewServeMux()

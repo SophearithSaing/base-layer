@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -67,4 +66,12 @@ func GetMongoDBConfig() (MongoDBConfig, error) {
 		DBName: dbName,
 	}
 	return mongoDBConfig, nil
+}
+
+func GetJWTSecret() (string, error) {
+	secret := GetEnv("JWT_SECRET", "")
+	if len(secret) < 32 {
+		return "", fmt.Errorf("invalid jwt secret")
+	}
+	return secret, nil
 }

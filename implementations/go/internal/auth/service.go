@@ -11,12 +11,14 @@ import (
 type Service struct {
 	refreshTokenRepo *RefreshTokenRepository
 	userService      *user.Service
+	jwtSecret        []byte
 }
 
-func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Service) *Service {
+func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Service, jwtSecret string) *Service {
 	return &Service{
 		refreshTokenRepo: refreshTokenRepo,
 		userService:      userService,
+		jwtSecret:        []byte(jwtSecret),
 	}
 }
 
