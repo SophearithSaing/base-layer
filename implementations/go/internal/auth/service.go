@@ -3,6 +3,9 @@ package auth
 import (
 	"baselayer/internal/user"
 	"context"
+	"fmt"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
@@ -18,12 +21,11 @@ func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Serv
 }
 
 func (s *Service) Register(ctx context.Context, payload RegisterPayload) (user.User, error) {
-	// Add check existing validation
-	// filter := bson.D{{Key: "username", Value: payload.Username}}
-	// queryResult, err := s.userService.FindOne(ctx, filter)
-	// if err == nil {
-	// 	return user.User{}, err
-	// }
+	filter := bson.D{{Key: "username", Value: payload.Username}}
+	_, err := s.userService.FindOne(ctx, filter)
+	if err == nil {
+		return user.User{}, fmt.Errorf("username already exists")
+	}
 
 	passwordHash, err := hashPassword(payload.Password)
 	if err != nil {
