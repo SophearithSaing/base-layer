@@ -47,10 +47,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.Login(r.Context(), payload)
+	token, err := h.service.Login(r.Context(), payload)
 	if err != nil {
 		log.Printf("failed to login: %v", err)
 		http.Error(w, "failed to login", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

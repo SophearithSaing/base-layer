@@ -46,18 +46,18 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (user.U
 	return result, nil
 }
 
-func (s *Service) Login(ctx context.Context, payload LoginPayload) (user.User, error) {
+func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	existing, err := s.userService.FindOne(ctx, filter)
 	if err != nil {
-		return user.User{}, err
+		return "", err
 	}
 
 	result := verifyPassword(payload.Password, existing.PasswordHash)
 	if result {
-		return existing, nil
+		return s.signJWT(existing.Id.String())
 	} else {
-		return user.User{}, err
+		return "", err
 	}
 }
 
