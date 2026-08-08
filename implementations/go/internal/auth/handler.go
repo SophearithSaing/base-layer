@@ -56,10 +56,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setAuthCookie(w, token)
-
-	w.WriteHeader(http.StatusOK)
-	res := LoginResponse{
+	api.JSONResponseWriter(w, http.StatusOK, LoginResponse{
 		Success: true,
-	}
-	json.NewEncoder(w).Encode(res)
+	})
 }
