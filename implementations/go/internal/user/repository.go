@@ -42,7 +42,7 @@ func (r *Repository) FindOne(ctx context.Context, filter bson.D) (User, error) {
 	var user User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
-		return User{}, nil
+		return User{}, err
 	}
 	return user, nil
 }
