@@ -2,8 +2,10 @@ package main
 
 import (
 	"baselayer/internal/api"
+	"baselayer/internal/auth"
 	"baselayer/internal/config"
 	"baselayer/internal/db"
+	"baselayer/internal/user"
 	"context"
 	"errors"
 	"fmt"
@@ -55,6 +57,15 @@ func run() error {
 	}()
 	log.Printf("db connected: %v", mongo.DB.Name())
 
+	// User
+	userRepo := user.NewRepository(mongo.DB)
+	userService := user.NewService(userRepo)
+
+	// Auth
+	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
+	authService := auth.NewService(refreshTokenRepo, userService)
+	authHandler := auth.NewHandler(authService)
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -64,6 +75,7 @@ func run() error {
 	}
 
 	api.HandleRoutes(mux)
+	auth.RegisterRoutes(mux, authHandler)
 
 	serverErr := make(chan error, 1)
 
