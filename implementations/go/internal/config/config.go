@@ -57,7 +57,7 @@ func GetMongoDBConfig() (MongoDBConfig, error) {
 	var mongoDBConfig MongoDBConfig
 	uri := GetEnv("MONGODB_URI", "")
 	if uri == "" {
-		return mongoDBConfig, errors.New("MONGODB_URI not found")
+		return mongoDBConfig, fmt.Errorf("MONGODB_URI not found")
 	}
 
 	dbName := GetEnv("MONGODB_DB_NAME", "baselayer")
