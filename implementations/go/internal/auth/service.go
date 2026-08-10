@@ -24,16 +24,16 @@ func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Serv
 	}
 }
 
-func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, error) {
+func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	_, err := s.userService.FindOne(ctx, filter)
 	if err == nil {
-		return RegisterResponse{}, "", fmt.Errorf("username already exists")
+		return RegisterResponse{}, "", "", fmt.Errorf("username already exists")
 	}
 
 	passwordHash, err := hashPassword(payload.Password)
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
 	createUserPayload := user.CreateUserPayload{
 		Username:     payload.Username,
@@ -41,28 +41,42 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	}
 	result, err := s.userService.Create(ctx, createUserPayload)
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
 	token, err := s.signJWT(result.Id.String())
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
-	return RegisterResponse{Id: result.Id, Username: result.Username}, token, nil
+	refreshToken, err := s.createRefreshToken(ctx, result.Id)
+	if err != nil {
+		return RegisterResponse{}, "", "", err
+	}
+	return RegisterResponse{Id: result.Id, Username: result.Username}, token, refreshToken, nil
 }
 
-func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, error) {
+func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	existing, err := s.userService.FindOne(ctx, filter)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	result := verifyPassword(payload.Password, existing.PasswordHash)
-	if result {
-		return s.signJWT(existing.Id.String())
-	} else {
-		return "", err
+	if !result {
+		return "", "", err
 	}
+
+	accessToken, err := s.signJWT(existing.Id.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := s.createRefreshToken(ctx, existing.Id)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (s *Service) signJWT(userId string) (string, error) {
@@ -74,4 +88,22 @@ func (s *Service) signJWT(userId string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.jwtSecret)
+}
+
+func (s *Service) createRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
+	token, hashedToken, err := generateRefreshToken()
+	if err != nil {
+		return "", err
+	}
+	now := time.Now().UTC()
+	s.refreshTokenRepo.Create(ctx, RefreshToken{
+		UserId:      userId,
+		HashedToken: hashedToken,
+		IsRevoked:   false,
+		RevokedAt:   nil,
+		ExpiresAt:   now.AddDate(0, 0, 30),
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	})
+	return token, nil
 }
