@@ -3,6 +3,7 @@ package auth
 import (
 	"baselayer/internal/user"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -24,16 +25,16 @@ func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Serv
 	}
 }
 
-func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, error) {
+func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	_, err := s.userService.FindOne(ctx, filter)
 	if err == nil {
-		return RegisterResponse{}, "", fmt.Errorf("username already exists")
+		return RegisterResponse{}, "", "", fmt.Errorf("username already exists")
 	}
 
 	passwordHash, err := hashPassword(payload.Password)
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
 	createUserPayload := user.CreateUserPayload{
 		Username:     payload.Username,
@@ -41,28 +42,62 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	}
 	result, err := s.userService.Create(ctx, createUserPayload)
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
 	token, err := s.signJWT(result.Id.String())
 	if err != nil {
-		return RegisterResponse{}, "", err
+		return RegisterResponse{}, "", "", err
 	}
-	return RegisterResponse{Id: result.Id, Username: result.Username}, token, nil
+	refreshToken, err := s.issueRefreshToken(ctx, result.Id)
+	if err != nil {
+		return RegisterResponse{}, "", "", err
+	}
+	return RegisterResponse{Id: result.Id, Username: result.Username}, token, refreshToken, nil
 }
 
-func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, error) {
+func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, string, error) {
 	filter := bson.D{{Key: "username", Value: payload.Username}}
 	existing, err := s.userService.FindOne(ctx, filter)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	result := verifyPassword(payload.Password, existing.PasswordHash)
-	if result {
-		return s.signJWT(existing.Id.String())
-	} else {
-		return "", err
+	if !result {
+		return "", "", err
 	}
+
+	accessToken, err := s.signJWT(existing.Id.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := s.issueRefreshToken(ctx, existing.Id)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (s *Service) Refresh(ctx context.Context, token string) (string, string, error) {
+	existing, err := s.validateRefreshToken(ctx, token)
+	if err != nil {
+		return "", "", err
+	}
+	err = s.revokeRefreshToken(ctx, token)
+	if err != nil {
+		return "", "", err
+	}
+	accessToken, err := s.signJWT(existing.UserId.String())
+	if err != nil {
+		return "", "", err
+	}
+	refreshToken, err := s.issueRefreshToken(ctx, existing.UserId)
+	if err != nil {
+		return "", "", err
+	}
+	return accessToken, refreshToken, nil
 }
 
 func (s *Service) signJWT(userId string) (string, error) {
@@ -74,4 +109,49 @@ func (s *Service) signJWT(userId string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.jwtSecret)
+}
+
+func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
+	token, hashedToken, err := generateRefreshToken()
+	if err != nil {
+		return "", err
+	}
+	now := time.Now().UTC()
+	s.refreshTokenRepo.Create(ctx, RefreshToken{
+		UserId:      userId,
+		HashedToken: hashedToken,
+		IsRevoked:   false,
+		RevokedAt:   nil,
+		ExpiresAt:   now.AddDate(0, 0, 30),
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	})
+	return token, nil
+}
+
+func (s *Service) validateRefreshToken(ctx context.Context, token string) (RefreshToken, error) {
+	hashedToken := hashRefreshToken(token)
+	filter := bson.D{{Key: "hashedToken", Value: hashedToken}}
+	refreshToken, err := s.refreshTokenRepo.FindOne(ctx, filter)
+	if err != nil {
+		return RefreshToken{}, err
+	}
+	if refreshToken.IsRevoked {
+		return RefreshToken{}, errors.New("token is revoked")
+	}
+	if time.Now().After(refreshToken.ExpiresAt) {
+		return RefreshToken{}, errors.New("token is expired")
+	}
+	return refreshToken, nil
+}
+
+func (s *Service) revokeRefreshToken(ctx context.Context, token string) error {
+	hashedToken := hashRefreshToken(token)
+	filter := bson.M{"hashedToken": hashedToken, "isRevoked": false}
+	update := bson.M{"$set": bson.M{"isRevoked": true, "revokedAt": time.Now().UTC()}}
+	_, err := s.refreshTokenRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -27,14 +27,14 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, token, err := h.service.Register(r.Context(), payload)
+	result, token, refreshToken, err := h.service.Register(r.Context(), payload)
 	if err != nil {
 		log.Printf("failed to register: %v", err)
 		http.Error(w, "failed to register", http.StatusInternalServerError)
 		return
 	}
 
-	setAuthCookie(w, token)
+	setAuthCookie(w, token, refreshToken)
 	api.JSONResponseWriter(w, http.StatusCreated, result)
 }
 
@@ -48,15 +48,37 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.service.Login(r.Context(), payload)
+	token, refreshToken, err := h.service.Login(r.Context(), payload)
 	if err != nil {
 		log.Printf("failed to login: %v", err)
 		http.Error(w, "failed to login", http.StatusInternalServerError)
 		return
 	}
 
-	setAuthCookie(w, token)
+	setAuthCookie(w, token, refreshToken)
 	api.JSONResponseWriter(w, http.StatusOK, LoginResponse{
 		Success: true,
+	})
+}
+
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		log.Printf("token not found: %v", err)
+		http.Error(w, "token not found", http.StatusInternalServerError)
+		return
+	}
+	accessToken, refreshToken, err := h.service.Refresh(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to refresh: %v", err)
+		http.Error(w, "failed to refresh", http.StatusInternalServerError)
+		return
+	}
+
+	setAuthCookie(w, accessToken, refreshToken)
+	api.JSONResponseWriter(w, http.StatusOK, RefreshResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	})
 }
