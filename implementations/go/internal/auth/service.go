@@ -47,7 +47,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	refreshToken, err := s.createRefreshToken(ctx, result.Id)
+	refreshToken, err := s.issueRefreshToken(ctx, result.Id)
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
@@ -71,7 +71,7 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 		return "", "", err
 	}
 
-	refreshToken, err := s.createRefreshToken(ctx, existing.Id)
+	refreshToken, err := s.issueRefreshToken(ctx, existing.Id)
 	if err != nil {
 		return "", "", err
 	}
@@ -90,7 +90,7 @@ func (s *Service) signJWT(userId string) (string, error) {
 	return token.SignedString(s.jwtSecret)
 }
 
-func (s *Service) createRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
+func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
 	token, hashedToken, err := generateRefreshToken()
 	if err != nil {
 		return "", err
