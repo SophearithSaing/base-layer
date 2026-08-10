@@ -26,11 +26,11 @@ type RegisterResponse struct {
 }
 
 type RefreshToken struct {
-	UserId          bson.ObjectID `json:"userId"`
-	TokenLookupHash string        `json:"tokenLookupHash"`
-	TokenHash       string        `json:"tokenHash"`
-	ExpiresAt       time.Time     `json:"expiresAt"`
-	RevokedAt       time.Time     `json:"revokedAt"`
-	CreatedAt       time.Time     `json:"createdAt"`
-	UpdatedAt       time.Time     `json:"updatedAt"`
+	UserId      bson.ObjectID `bson:"userId"`
+	HashedToken string        `bson:"hashedToken"`
+	IsRevoked   bool          `bson:"isRevoked"`
+	ExpiresAt   time.Time     `bson:"expiresAt"`
+	RevokedAt   *time.Time    `bson:"revokedAt"`
+	CreatedAt   time.Time     `bson:"createdAt"`
+	UpdatedAt   time.Time     `bson:"updatedAt"`
 }
