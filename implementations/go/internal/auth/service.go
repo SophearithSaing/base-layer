@@ -3,6 +3,7 @@ package auth
 import (
 	"baselayer/internal/user"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -106,4 +107,31 @@ func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (
 		UpdatedAt:   now,
 	})
 	return token, nil
+}
+
+func (s *Service) validateRefreshToken(ctx context.Context, token string) (RefreshToken, error) {
+	hashedToken := hashRefreshToken(token)
+	filter := bson.D{{Key: "hashedToken", Value: hashedToken}}
+	refreshToken, err := s.refreshTokenRepo.FindOne(ctx, filter)
+	if err != nil {
+		return RefreshToken{}, err
+	}
+	if refreshToken.IsRevoked {
+		return RefreshToken{}, errors.New("token is revoked")
+	}
+	if time.Now().After(refreshToken.ExpiresAt) {
+		return RefreshToken{}, errors.New("token is expired")
+	}
+	return refreshToken, nil
+}
+
+func (s *Service) revokeRefreshToken(ctx context.Context, token string) error {
+	hashedToken := hashRefreshToken(token)
+	filter := bson.M{"hashedToken": hashedToken, "isRevoked": false}
+	update := bson.M{"$set": bson.M{"isRevoked": true, "revokedAt": time.Now().UTC()}}
+	_, err := s.refreshTokenRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
