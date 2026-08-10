@@ -60,3 +60,25 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 	})
 }
+
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		log.Printf("token not found: %v", err)
+		http.Error(w, "token not found", http.StatusInternalServerError)
+		return
+	}
+	accessToken, refreshToken, err := h.service.Refresh(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to refresh: %v", err)
+		http.Error(w, "failed to refresh", http.StatusInternalServerError)
+		return
+	}
+
+	setAuthCookie(w, accessToken, refreshToken)
+	api.JSONResponseWriter(w, http.StatusOK, RefreshResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
+}

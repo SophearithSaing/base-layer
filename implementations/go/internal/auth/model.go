@@ -25,6 +25,11 @@ type RegisterResponse struct {
 	Username string        `json:"username"`
 }
 
+type RefreshResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
 type RefreshToken struct {
 	UserId      bson.ObjectID `bson:"userId"`
 	HashedToken string        `bson:"hashedToken"`
