@@ -80,6 +80,26 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 	return accessToken, refreshToken, nil
 }
 
+func (s *Service) Refresh(ctx context.Context, token string) (string, string, error) {
+	existing, err := s.validateRefreshToken(ctx, token)
+	if err != nil {
+		return "", "", err
+	}
+	err = s.revokeRefreshToken(ctx, token)
+	if err != nil {
+		return "", "", err
+	}
+	accessToken, err := s.signJWT(existing.UserId.String())
+	if err != nil {
+		return "", "", err
+	}
+	refreshToken, err := s.issueRefreshToken(ctx, existing.UserId)
+	if err != nil {
+		return "", "", err
+	}
+	return accessToken, refreshToken, nil
+}
+
 func (s *Service) signJWT(userId string) (string, error) {
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
