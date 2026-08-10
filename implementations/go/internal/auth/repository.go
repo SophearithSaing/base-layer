@@ -34,3 +34,12 @@ func (rtr *RefreshTokenRepository) FindOne(ctx context.Context, filter bson.D) (
 	}
 	return token, nil
 }
+
+func (rtr *RefreshTokenRepository) UpdateOne(ctx context.Context, filter bson.M, update bson.M) (RefreshToken, error) {
+	var refreshToken RefreshToken
+	err := rtr.collection.FindOneAndUpdate(ctx, filter, update).Decode(&refreshToken)
+	if err != nil {
+		return RefreshToken{}, err
+	}
+	return refreshToken, nil
+}
