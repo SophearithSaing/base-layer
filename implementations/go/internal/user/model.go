@@ -12,9 +12,9 @@ type CreateUserPayload struct {
 }
 
 type User struct {
-	Id           bson.ObjectID `json:"id"`
-	Username     string        `json:"username"`
-	PasswordHash string        `json:"passwordHash"`
-	CreatedAt    time.Time     `json:"createdAt"`
-	UpdatedAt    time.Time     `json:"updatedAt"`
+	Id           bson.ObjectID `bson:"_id"`
+	Username     string        `bson:"username"`
+	PasswordHash string        `bson:"passwordHash"`
+	CreatedAt    time.Time     `bson:"createdAt"`
+	UpdatedAt    time.Time     `bson:"updatedAt"`
 }
