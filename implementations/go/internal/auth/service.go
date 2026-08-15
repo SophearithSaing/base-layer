@@ -4,6 +4,7 @@ import (
 	"baselayer/internal/user"
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -25,12 +26,13 @@ func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Serv
 }
 
 func (s *Service) Register(ctx context.Context, payload RegisterPayload) (RegisterResponse, string, string, error) {
-	err := validateInput(payload.Username, payload.Password)
+	username := strings.ToLower(strings.TrimSpace(payload.Username))
+	err := validateInput(username, payload.Password)
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
 
-	filter := bson.D{{Key: "username", Value: payload.Username}}
+	filter := bson.D{{Key: "username", Value: username}}
 	_, err = s.userService.FindOne(ctx, filter)
 	if err == nil {
 		return RegisterResponse{}, "", "", ErrUsernameAlreadyExists
@@ -41,7 +43,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 		return RegisterResponse{}, "", "", err
 	}
 	createUserPayload := user.CreateUserPayload{
-		Username:     payload.Username,
+		Username:     username,
 		PasswordHash: passwordHash,
 	}
 	result, err := s.userService.Create(ctx, createUserPayload)
@@ -60,12 +62,13 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 }
 
 func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, string, error) {
-	err := validateInput(payload.Username, payload.Password)
+	username := strings.ToLower(strings.TrimSpace(payload.Username))
+	err := validateInput(username, payload.Password)
 	if err != nil {
 		return "", "", err
 	}
 
-	filter := bson.D{{Key: "username", Value: payload.Username}}
+	filter := bson.D{{Key: "username", Value: username}}
 	existing, err := s.userService.FindOne(ctx, filter)
 	if err != nil {
 		return "", "", err
