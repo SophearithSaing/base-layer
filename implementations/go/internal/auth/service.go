@@ -76,7 +76,7 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 
 	result := verifyPassword(payload.Password, existing.PasswordHash)
 	if !result {
-		return "", "", err
+		return "", "", ErrIncorrectPassword
 	}
 
 	accessToken, err := s.signJWT(existing.Id.String())
