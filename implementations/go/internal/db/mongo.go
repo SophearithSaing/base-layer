@@ -4,8 +4,10 @@ import (
 	"baselayer/internal/config"
 	"context"
 	"fmt"
+	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -39,4 +41,20 @@ func NewMongo(config config.MongoDBConfig) (*Mongo, error) {
 
 func (m *Mongo) Close(ctx context.Context) error {
 	return m.Client.Disconnect(ctx)
+}
+
+func (m *Mongo) EnsureIndexes(ctx context.Context) error {
+	users := m.DB.Collection("users")
+
+	userIndexName, err := users.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "username", Value: 1},
+		},
+		Options: options.Index().SetUnique(true).SetName("username_uq"),
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("index created: %v", userIndexName)
+	return nil
 }

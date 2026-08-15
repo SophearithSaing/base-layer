@@ -57,6 +57,11 @@ func run() error {
 	}()
 	log.Printf("db connected: %v", mongo.DB.Name())
 
+	err = mongo.EnsureIndexes(ctx)
+	if err != nil {
+		return fmt.Errorf("error indexing collections: %w", err)
+	}
+
 	jwtSecret, err := config.GetJWTSecret()
 	if err != nil {
 		return fmt.Errorf("error getting jwt secret: %w", err)
