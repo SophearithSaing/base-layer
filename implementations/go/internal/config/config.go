@@ -15,6 +15,10 @@ func GetEnv(key, fallback string) string {
 	}
 }
 
+func GetAppEnv() string {
+	return GetEnv("APP_ENV", "dev")
+}
+
 func GetPort() (string, error) {
 	portValue := GetEnv("PORT", "8000")
 	port, err := strconv.ParseInt(portValue, 10, 32)
