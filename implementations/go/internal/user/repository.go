@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -18,6 +19,9 @@ func NewRepository(db *mongo.Database) *Repository {
 
 func (r *Repository) Create(ctx context.Context, user User) error {
 	_, err := r.collection.InsertOne(ctx, user)
+	if mongo.IsDuplicateKeyError(err) {
+		return ErrUserAlreadyExists
+	}
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
@@ -32,6 +36,9 @@ func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
 	filter := bson.D{{Key: "_id", Value: objectId}}
 	var user User
 	err = r.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return User{}, ErrUserNotFound
+	}
 	if err != nil {
 		return User{}, err
 	}
@@ -41,6 +48,9 @@ func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
 func (r *Repository) FindOne(ctx context.Context, filter bson.D) (User, error) {
 	var user User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return User{}, ErrUserNotFound
+	}
 	if err != nil {
 		return User{}, err
 	}
