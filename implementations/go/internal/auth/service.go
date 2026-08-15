@@ -117,7 +117,7 @@ func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (
 		return "", err
 	}
 	now := time.Now().UTC()
-	s.refreshTokenRepo.Create(ctx, RefreshToken{
+	err = s.refreshTokenRepo.Create(ctx, RefreshToken{
 		UserId:      userId,
 		HashedToken: hashedToken,
 		IsRevoked:   false,
@@ -126,6 +126,9 @@ func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	})
+	if err != nil {
+		return "", err
+	}
 	return token, nil
 }
 
