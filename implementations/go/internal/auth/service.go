@@ -37,7 +37,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err == nil {
 		return RegisterResponse{}, "", "", ErrUsernameAlreadyExists
 	}
-	if !errors.Is(err, user.ErrNotFound) {
+	if !errors.Is(err, user.ErrUserNotFound) {
 		return RegisterResponse{}, "", "", err
 	}
 

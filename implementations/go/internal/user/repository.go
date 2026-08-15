@@ -34,7 +34,7 @@ func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
 	var user User
 	err = r.collection.FindOne(ctx, filter).Decode(&user)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return User{}, ErrNotFound
+		return User{}, ErrUserNotFound
 	}
 	if err != nil {
 		return User{}, err
@@ -46,7 +46,7 @@ func (r *Repository) FindOne(ctx context.Context, filter bson.D) (User, error) {
 	var user User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return User{}, ErrNotFound
+		return User{}, ErrUserNotFound
 	}
 	if err != nil {
 		return User{}, err
