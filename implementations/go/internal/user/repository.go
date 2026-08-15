@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -32,6 +33,9 @@ func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
 	filter := bson.D{{Key: "_id", Value: objectId}}
 	var user User
 	err = r.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return User{}, ErrNotFound
+	}
 	if err != nil {
 		return User{}, err
 	}
@@ -41,6 +45,9 @@ func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
 func (r *Repository) FindOne(ctx context.Context, filter bson.D) (User, error) {
 	var user User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return User{}, ErrNotFound
+	}
 	if err != nil {
 		return User{}, err
 	}
