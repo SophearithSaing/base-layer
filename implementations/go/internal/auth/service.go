@@ -94,10 +94,10 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 
 func validateInput(username, password string) error {
 	if len(username) == 0 {
-		return ErrInvalidUsername
+		return ErrUsernameNotProvided
 	}
 	if len(password) < 8 {
-		return ErrInvalidPassword
+		return ErrPasswordTooShort
 	}
 	return nil
 }
