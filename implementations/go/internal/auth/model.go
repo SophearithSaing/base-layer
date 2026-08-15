@@ -26,8 +26,7 @@ type RegisterResponse struct {
 }
 
 type RefreshResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	Success bool `json:"success"`
 }
 
 type RefreshToken struct {

@@ -78,7 +78,6 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	setAuthCookie(w, accessToken, refreshToken)
 	api.JSONResponseWriter(w, http.StatusOK, RefreshResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		Success: true,
 	})
 }
