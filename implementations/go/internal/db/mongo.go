@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -45,16 +46,35 @@ func (m *Mongo) Close(ctx context.Context) error {
 
 func (m *Mongo) EnsureIndexes(ctx context.Context) error {
 	users := m.DB.Collection("users")
+	refreshTokens := m.DB.Collection("refresh_tokens")
 
 	userIndexName, err := users.Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys: bson.D{
-			{Key: "username", Value: 1},
-		},
+		Keys:    bson.D{{Key: "username", Value: 1}},
 		Options: options.Index().SetUnique(true).SetName("username_uq"),
 	})
 	if err != nil {
 		return err
 	}
 	log.Printf("index created: %v", userIndexName)
+
+	rtIndexNames, err := refreshTokens.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "userId", Value: 1}},
+			Options: options.Index().SetName("userId_idx"),
+		},
+		{
+			Keys:    bson.D{{Key: "hashedToken", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("hashedToken_uq"),
+		},
+		{
+			Keys:    bson.D{{Key: "expiresAt", Value: 1}},
+			Options: options.Index().SetExpireAfterSeconds(0).SetName("expiresAt_ttl"),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("indexes created: %v", strings.Join(rtIndexNames, ", "))
+
 	return nil
 }
