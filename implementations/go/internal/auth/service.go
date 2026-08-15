@@ -50,6 +50,9 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 		PasswordHash: passwordHash,
 	}
 	result, err := s.userService.Create(ctx, createUserPayload)
+	if errors.Is(err, user.ErrUserAlreadyExists) {
+		return RegisterResponse{}, "", "", ErrUsernameAlreadyExists
+	}
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}

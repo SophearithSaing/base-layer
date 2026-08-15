@@ -19,6 +19,9 @@ func NewRepository(db *mongo.Database) *Repository {
 
 func (r *Repository) Create(ctx context.Context, user User) error {
 	_, err := r.collection.InsertOne(ctx, user)
+	if mongo.IsDuplicateKeyError(err) {
+		return ErrUserAlreadyExists
+	}
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
