@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -29,6 +30,9 @@ func (rtr *RefreshTokenRepository) Create(ctx context.Context, refreshToken Refr
 func (rtr *RefreshTokenRepository) FindOne(ctx context.Context, filter bson.D) (RefreshToken, error) {
 	var token RefreshToken
 	err := rtr.collection.FindOne(ctx, filter).Decode(&token)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return RefreshToken{}, ErrTokenNotFound
+	}
 	if err != nil {
 		return RefreshToken{}, err
 	}

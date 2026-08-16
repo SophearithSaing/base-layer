@@ -168,10 +168,10 @@ func (s *Service) validateRefreshToken(ctx context.Context, token string) (Refre
 		return RefreshToken{}, err
 	}
 	if refreshToken.IsRevoked {
-		return RefreshToken{}, errors.New("token is revoked")
+		return RefreshToken{}, ErrTokenIsRevoked
 	}
 	if time.Now().After(refreshToken.ExpiresAt) {
-		return RefreshToken{}, errors.New("token is expired")
+		return RefreshToken{}, ErrTokenIsExpired
 	}
 	return refreshToken, nil
 }
