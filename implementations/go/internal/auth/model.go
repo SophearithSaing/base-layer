@@ -42,3 +42,8 @@ type RefreshToken struct {
 type LogoutResponse struct {
 	Success bool `json:"success"`
 }
+
+type UserResponse struct {
+	Id       bson.ObjectID `json:"id"`
+	Username string        `json:"username"`
+}

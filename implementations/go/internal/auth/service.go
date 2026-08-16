@@ -119,6 +119,19 @@ func validateInput(username, password string) error {
 	return nil
 }
 
+func (s *Service) getUser(ctx context.Context, token string) (UserResponse, error) {
+	claims, err := s.verifyJWT(token)
+	if err != nil {
+		return UserResponse{}, err
+	}
+	userId := claims.Subject
+	user, err := s.userService.GetById(ctx, userId)
+	if err != nil {
+		return UserResponse{}, err
+	}
+	return UserResponse{Id: user.Id, Username: user.Username}, nil
+}
+
 func (s *Service) Refresh(ctx context.Context, token string) (string, string, error) {
 	existing, err := s.validateRefreshToken(ctx, token)
 	if err != nil {
