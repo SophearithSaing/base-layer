@@ -33,3 +33,20 @@ func setAuthCookie(w http.ResponseWriter, accessToken, refreshToken string) {
 		Expires:  now.AddDate(0, 0, 30),
 	})
 }
+
+func clearAuthCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/auth",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+}
