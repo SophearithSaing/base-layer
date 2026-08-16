@@ -56,7 +56,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	token, err := s.signJWT(result.Id.String())
+	token, err := s.signJWT(result.Id.Hex())
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
@@ -85,7 +85,7 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 		return "", "", ErrIncorrectPassword
 	}
 
-	accessToken, err := s.signJWT(existing.Id.String())
+	accessToken, err := s.signJWT(existing.Id.Hex())
 	if err != nil {
 		return "", "", err
 	}
@@ -128,7 +128,7 @@ func (s *Service) Refresh(ctx context.Context, token string) (string, string, er
 	if err != nil {
 		return "", "", err
 	}
-	accessToken, err := s.signJWT(existing.UserId.String())
+	accessToken, err := s.signJWT(existing.UserId.Hex())
 	if err != nil {
 		return "", "", err
 	}
