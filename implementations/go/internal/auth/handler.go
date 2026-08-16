@@ -3,6 +3,7 @@ package auth
 import (
 	"baselayer/internal/api"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 )
@@ -80,4 +81,49 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 	api.JSONResponseWriter(w, http.StatusOK, RefreshResponse{
 		Success: true,
 	})
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("refresh_token")
+	if errors.Is(err, http.ErrNoCookie) {
+		clearAuthCookie(w)
+		api.JSONResponseWriter(w, http.StatusOK, LogoutResponse{
+			Success: true,
+		})
+		return
+	}
+	if err != nil {
+		log.Printf("error reading cookie: %v", err)
+		http.Error(w, "error reading cookie", http.StatusInternalServerError)
+		return
+	}
+	err = h.service.Logout(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to logout: %v", err)
+		http.Error(w, "failed to logout", http.StatusInternalServerError)
+		return
+	}
+
+	clearAuthCookie(w)
+	api.JSONResponseWriter(w, http.StatusOK, LogoutResponse{
+		Success: true,
+	})
+}
+
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		log.Printf("token not found: %v", err)
+		http.Error(w, "token not found", http.StatusInternalServerError)
+		return
+	}
+	user, err := h.service.Me(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to get user: %v", err)
+		http.Error(w, "failed to get user", http.StatusInternalServerError)
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, user)
 }
