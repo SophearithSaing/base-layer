@@ -26,7 +26,7 @@ func setAuthCookie(w http.ResponseWriter, accessToken, refreshToken string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
-		Path:     "/auth/refresh",
+		Path:     "/auth",
 		HttpOnly: true,
 		Secure:   isProd,
 		SameSite: sameSite,
