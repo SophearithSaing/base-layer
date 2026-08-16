@@ -150,6 +150,25 @@ func (s *Service) signJWT(userId string) (string, error) {
 	return token.SignedString(s.jwtSecret)
 }
 
+func (s *Service) verifyJWT(raw string) (jwt.RegisteredClaims, error) {
+	var claims jwt.RegisteredClaims
+
+	token, err := jwt.ParseWithClaims(
+		raw, &claims, func(token *jwt.Token) (any, error) {
+			return s.jwtSecret, nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+		jwt.WithExpirationRequired(),
+	)
+	if err != nil {
+		return jwt.RegisteredClaims{}, err
+	}
+	if !token.Valid {
+		return jwt.RegisteredClaims{}, ErrTokenIsInvalid
+	}
+	return claims, nil
+}
+
 func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
 	token, hashedToken, err := generateRefreshToken()
 	if err != nil {
