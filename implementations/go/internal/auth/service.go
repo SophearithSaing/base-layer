@@ -98,6 +98,17 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 	return accessToken, refreshToken, nil
 }
 
+func (s *Service) Logout(ctx context.Context, token string) error {
+	_, err := s.validateRefreshToken(ctx, token)
+	if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenIsRevoked) || errors.Is(err, ErrTokenIsExpired) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return s.revokeRefreshToken(ctx, token)
+}
+
 func validateInput(username, password string) error {
 	if len(username) == 0 {
 		return ErrUsernameNotProvided

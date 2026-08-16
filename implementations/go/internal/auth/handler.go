@@ -3,6 +3,7 @@ package auth
 import (
 	"baselayer/internal/api"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 )
@@ -78,6 +79,34 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	setAuthCookie(w, accessToken, refreshToken)
 	api.JSONResponseWriter(w, http.StatusOK, RefreshResponse{
+		Success: true,
+	})
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("refresh_token")
+	if errors.Is(err, http.ErrNoCookie) {
+		clearAuthCookie(w)
+		api.JSONResponseWriter(w, http.StatusOK, LogoutResponse{
+			Success: true,
+		})
+		return
+	}
+	if err != nil {
+		log.Printf("error reading cookie: %v", err)
+		http.Error(w, "error reading cookie", http.StatusInternalServerError)
+		return
+	}
+	err = h.service.Logout(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to logout: %v", err)
+		http.Error(w, "failed to logout", http.StatusInternalServerError)
+		return
+	}
+
+	clearAuthCookie(w)
+	api.JSONResponseWriter(w, http.StatusOK, LogoutResponse{
 		Success: true,
 	})
 }

@@ -38,3 +38,7 @@ type RefreshToken struct {
 	CreatedAt   time.Time     `bson:"createdAt"`
 	UpdatedAt   time.Time     `bson:"updatedAt"`
 }
+
+type LogoutResponse struct {
+	Success bool `json:"success"`
+}
