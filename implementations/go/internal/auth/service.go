@@ -119,6 +119,10 @@ func validateInput(username, password string) error {
 	return nil
 }
 
+func (s *Service) Me(ctx context.Context, token string) (UserResponse, error) {
+	return s.getUser(ctx, token)
+}
+
 func (s *Service) getUser(ctx context.Context, token string) (UserResponse, error) {
 	claims, err := s.verifyJWT(token)
 	if err != nil {

@@ -110,3 +110,20 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 	})
 }
+
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		log.Printf("token not found: %v", err)
+		http.Error(w, "token not found", http.StatusInternalServerError)
+		return
+	}
+	user, err := h.service.Me(r.Context(), cookie.Value)
+	if err != nil {
+		log.Printf("failed to get user: %v", err)
+		http.Error(w, "failed to get user", http.StatusInternalServerError)
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, user)
+}
