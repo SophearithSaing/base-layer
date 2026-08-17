@@ -118,16 +118,15 @@ func validateInput(username, password string) error {
 	return nil
 }
 
-func (s *Service) Me(ctx context.Context, token string) (UserResponse, error) {
-	return s.getUser(ctx, token)
-}
-
-func (s *Service) getUser(ctx context.Context, token string) (UserResponse, error) {
-	claims, err := s.jwtProvider.verifyJWT(token)
+func (s *Service) Me(ctx context.Context) (UserResponse, error) {
+	userId, err := CurrentUserID(ctx)
 	if err != nil {
 		return UserResponse{}, err
 	}
-	userId := claims.Subject
+	return s.getUser(ctx, userId)
+}
+
+func (s *Service) getUser(ctx context.Context, userId string) (UserResponse, error) {
 	user, err := s.userService.GetById(ctx, userId)
 	if err != nil {
 		return UserResponse{}, err
