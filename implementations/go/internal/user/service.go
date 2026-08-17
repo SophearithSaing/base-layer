@@ -17,7 +17,7 @@ func NewService(repo *Repository) *Service {
 
 func (s *Service) Create(ctx context.Context, payload CreateUserPayload) (User, error) {
 	user := User{
-		Id:           bson.NewObjectID(),
+		ID:           bson.NewObjectID(),
 		Username:     payload.Username,
 		PasswordHash: payload.PasswordHash,
 		CreatedAt:    time.Now().UTC(),
@@ -29,8 +29,8 @@ func (s *Service) Create(ctx context.Context, payload CreateUserPayload) (User, 
 	return user, nil
 }
 
-func (s *Service) GetById(ctx context.Context, id string) (User, error) {
-	return s.repo.GetById(ctx, id)
+func (s *Service) GetByID(ctx context.Context, id string) (User, error) {
+	return s.repo.GetByID(ctx, id)
 }
 
 func (s *Service) FindOne(ctx context.Context, filter bson.D) (User, error) {

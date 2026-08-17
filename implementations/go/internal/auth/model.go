@@ -21,7 +21,7 @@ type LoginResponse struct {
 }
 
 type RegisterResponse struct {
-	Id       bson.ObjectID `json:"id"`
+	ID       bson.ObjectID `json:"id"`
 	Username string        `json:"username"`
 }
 
@@ -30,7 +30,7 @@ type RefreshResponse struct {
 }
 
 type RefreshToken struct {
-	UserId      bson.ObjectID `bson:"userId"`
+	UserID      bson.ObjectID `bson:"userId"`
 	HashedToken string        `bson:"hashedToken"`
 	IsRevoked   bool          `bson:"isRevoked"`
 	ExpiresAt   time.Time     `bson:"expiresAt"`
@@ -44,6 +44,10 @@ type LogoutResponse struct {
 }
 
 type UserResponse struct {
-	Id       bson.ObjectID `json:"id"`
+	ID       bson.ObjectID `json:"id"`
 	Username string        `json:"username"`
+}
+
+type AuthResponse struct {
+	Message string `json:"message"`
 }
