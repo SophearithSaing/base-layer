@@ -119,15 +119,15 @@ func validateInput(username, password string) error {
 }
 
 func (s *Service) Me(ctx context.Context) (UserResponse, error) {
-	userId, err := CurrentUserID(ctx)
+	userID, err := CurrentUserID(ctx)
 	if err != nil {
 		return UserResponse{}, err
 	}
-	return s.getUser(ctx, userId)
+	return s.getUser(ctx, userID)
 }
 
-func (s *Service) getUser(ctx context.Context, userId string) (UserResponse, error) {
-	user, err := s.userService.GetById(ctx, userId)
+func (s *Service) getUser(ctx context.Context, userID string) (UserResponse, error) {
+	user, err := s.userService.GetById(ctx, userID)
 	if err != nil {
 		return UserResponse{}, err
 	}
@@ -154,14 +154,14 @@ func (s *Service) Refresh(ctx context.Context, token string) (string, string, er
 	return accessToken, refreshToken, nil
 }
 
-func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
+func (s *Service) issueRefreshToken(ctx context.Context, userID bson.ObjectID) (string, error) {
 	token, hashedToken, err := generateRefreshToken()
 	if err != nil {
 		return "", err
 	}
 	now := time.Now().UTC()
 	err = s.refreshTokenRepo.Create(ctx, RefreshToken{
-		UserID:      userId,
+		UserID:      userID,
 		HashedToken: hashedToken,
 		IsRevoked:   false,
 		RevokedAt:   nil,

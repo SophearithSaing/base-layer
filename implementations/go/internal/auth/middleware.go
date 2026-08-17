@@ -8,7 +8,7 @@ import (
 
 type contextKey string
 
-const claimsKey contextKey = "userId"
+const claimsKey contextKey = "userID"
 
 func AuthMiddleware(provider *JWTProvider) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -38,12 +38,12 @@ func CurrentUserID(ctx context.Context) (string, error) {
 	if val == nil {
 		return "", ErrAuthIdentityMissing
 	}
-	userId, ok := val.(string)
+	userID, ok := val.(string)
 	if !ok {
 		return "", ErrAuthIdentityMissing
 	}
-	if userId == "" {
+	if userID == "" {
 		return "", ErrAuthIdentityMissing
 	}
-	return userId, nil
+	return userID, nil
 }

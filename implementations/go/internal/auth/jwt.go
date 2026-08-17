@@ -16,10 +16,10 @@ func NewJWTProvider(secret string) *JWTProvider {
 	}
 }
 
-func (j *JWTProvider) signJWT(userId string) (string, error) {
+func (j *JWTProvider) signJWT(userID string) (string, error) {
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
-		Subject:   userId,
+		Subject:   userID,
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
 	}
