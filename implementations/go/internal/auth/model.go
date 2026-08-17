@@ -47,3 +47,7 @@ type UserResponse struct {
 	Id       bson.ObjectID `json:"id"`
 	Username string        `json:"username"`
 }
+
+type AuthResponse struct {
+	Message string `json:"message"`
+}
