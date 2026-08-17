@@ -12,3 +12,5 @@ var ErrTokenNotFound = errors.New("token not found")
 var ErrTokenIsRevoked = errors.New("token is revoked")
 var ErrTokenIsExpired = errors.New("token is expired")
 var ErrTokenIsInvalid = errors.New("token is invalid")
+
+var ErrAuthIdentityMissing = errors.New("authenticated identity is missing")
