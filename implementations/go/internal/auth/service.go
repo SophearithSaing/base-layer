@@ -7,21 +7,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
 	refreshTokenRepo *RefreshTokenRepository
+	jwtProvider      *JWTProvider
 	userService      *user.Service
-	jwtSecret        []byte
 }
 
-func NewService(refreshTokenRepo *RefreshTokenRepository, userService *user.Service, jwtSecret string) *Service {
+func NewService(refreshTokenRepo *RefreshTokenRepository, jwtProvider *JWTProvider, userService *user.Service) *Service {
 	return &Service{
 		refreshTokenRepo: refreshTokenRepo,
 		userService:      userService,
-		jwtSecret:        []byte(jwtSecret),
+		jwtProvider:      jwtProvider,
 	}
 }
 
@@ -56,7 +55,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	token, err := s.signJWT(result.Id.Hex())
+	token, err := s.jwtProvider.signJWT(result.Id.Hex())
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
@@ -85,7 +84,7 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 		return "", "", ErrIncorrectPassword
 	}
 
-	accessToken, err := s.signJWT(existing.Id.Hex())
+	accessToken, err := s.jwtProvider.signJWT(existing.Id.Hex())
 	if err != nil {
 		return "", "", err
 	}
@@ -124,7 +123,7 @@ func (s *Service) Me(ctx context.Context, token string) (UserResponse, error) {
 }
 
 func (s *Service) getUser(ctx context.Context, token string) (UserResponse, error) {
-	claims, err := s.verifyJWT(token)
+	claims, err := s.jwtProvider.verifyJWT(token)
 	if err != nil {
 		return UserResponse{}, err
 	}
@@ -145,7 +144,7 @@ func (s *Service) Refresh(ctx context.Context, token string) (string, string, er
 	if err != nil {
 		return "", "", err
 	}
-	accessToken, err := s.signJWT(existing.UserId.Hex())
+	accessToken, err := s.jwtProvider.signJWT(existing.UserId.Hex())
 	if err != nil {
 		return "", "", err
 	}
@@ -154,36 +153,6 @@ func (s *Service) Refresh(ctx context.Context, token string) (string, string, er
 		return "", "", err
 	}
 	return accessToken, refreshToken, nil
-}
-
-func (s *Service) signJWT(userId string) (string, error) {
-	now := time.Now()
-	claims := jwt.RegisteredClaims{
-		Subject:   userId,
-		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(s.jwtSecret)
-}
-
-func (s *Service) verifyJWT(raw string) (jwt.RegisteredClaims, error) {
-	var claims jwt.RegisteredClaims
-
-	token, err := jwt.ParseWithClaims(
-		raw, &claims, func(token *jwt.Token) (any, error) {
-			return s.jwtSecret, nil
-		},
-		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
-		jwt.WithExpirationRequired(),
-	)
-	if err != nil {
-		return jwt.RegisteredClaims{}, err
-	}
-	if !token.Valid {
-		return jwt.RegisteredClaims{}, ErrTokenIsInvalid
-	}
-	return claims, nil
 }
 
 func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (string, error) {
