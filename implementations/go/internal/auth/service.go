@@ -127,7 +127,7 @@ func (s *Service) Me(ctx context.Context) (UserResponse, error) {
 }
 
 func (s *Service) getUser(ctx context.Context, userID string) (UserResponse, error) {
-	user, err := s.userService.GetById(ctx, userID)
+	user, err := s.userService.GetByID(ctx, userID)
 	if err != nil {
 		return UserResponse{}, err
 	}

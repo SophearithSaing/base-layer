@@ -28,7 +28,7 @@ func (r *Repository) Create(ctx context.Context, user User) error {
 	return nil
 }
 
-func (r *Repository) GetById(ctx context.Context, id string) (User, error) {
+func (r *Repository) GetByID(ctx context.Context, id string) (User, error) {
 	objectId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return User{}, err
