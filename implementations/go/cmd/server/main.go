@@ -74,6 +74,7 @@ func run() error {
 	// Auth
 	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
 	jwtProvider := auth.NewJWTProvider(jwtSecret)
+	authMiddleware := auth.AuthMiddleware(jwtProvider)
 	authService := auth.NewService(refreshTokenRepo, jwtProvider, userService)
 	authHandler := auth.NewHandler(authService)
 
@@ -86,7 +87,7 @@ func run() error {
 	}
 
 	api.HandleRoutes(mux)
-	auth.RegisterRoutes(mux, authHandler)
+	auth.RegisterRoutes(mux, authHandler, authMiddleware)
 
 	serverErr := make(chan error, 1)
 
