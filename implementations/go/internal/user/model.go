@@ -12,7 +12,7 @@ type CreateUserPayload struct {
 }
 
 type User struct {
-	Id           bson.ObjectID `bson:"_id"`
+	ID           bson.ObjectID `bson:"_id"`
 	Username     string        `bson:"username"`
 	PasswordHash string        `bson:"passwordHash"`
 	CreatedAt    time.Time     `bson:"createdAt"`

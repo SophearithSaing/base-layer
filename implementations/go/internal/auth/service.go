@@ -55,15 +55,15 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	token, err := s.jwtProvider.signJWT(result.Id.Hex())
+	token, err := s.jwtProvider.signJWT(result.ID.Hex())
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	refreshToken, err := s.issueRefreshToken(ctx, result.Id)
+	refreshToken, err := s.issueRefreshToken(ctx, result.ID)
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	return RegisterResponse{ID: result.Id, Username: result.Username}, token, refreshToken, nil
+	return RegisterResponse{ID: result.ID, Username: result.Username}, token, refreshToken, nil
 }
 
 func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, string, error) {
@@ -84,12 +84,12 @@ func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, stri
 		return "", "", ErrIncorrectPassword
 	}
 
-	accessToken, err := s.jwtProvider.signJWT(existing.Id.Hex())
+	accessToken, err := s.jwtProvider.signJWT(existing.ID.Hex())
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := s.issueRefreshToken(ctx, existing.Id)
+	refreshToken, err := s.issueRefreshToken(ctx, existing.ID)
 	if err != nil {
 		return "", "", err
 	}
@@ -131,7 +131,7 @@ func (s *Service) getUser(ctx context.Context, userId string) (UserResponse, err
 	if err != nil {
 		return UserResponse{}, err
 	}
-	return UserResponse{ID: user.Id, Username: user.Username}, nil
+	return UserResponse{ID: user.ID, Username: user.Username}, nil
 }
 
 func (s *Service) Refresh(ctx context.Context, token string) (string, string, error) {

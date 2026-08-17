@@ -17,7 +17,7 @@ func NewService(repo *Repository) *Service {
 
 func (s *Service) Create(ctx context.Context, payload CreateUserPayload) (User, error) {
 	user := User{
-		Id:           bson.NewObjectID(),
+		ID:           bson.NewObjectID(),
 		Username:     payload.Username,
 		PasswordHash: payload.PasswordHash,
 		CreatedAt:    time.Now().UTC(),
