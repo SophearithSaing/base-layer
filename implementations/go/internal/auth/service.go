@@ -63,7 +63,7 @@ func (s *Service) Register(ctx context.Context, payload RegisterPayload) (Regist
 	if err != nil {
 		return RegisterResponse{}, "", "", err
 	}
-	return RegisterResponse{Id: result.Id, Username: result.Username}, token, refreshToken, nil
+	return RegisterResponse{ID: result.Id, Username: result.Username}, token, refreshToken, nil
 }
 
 func (s *Service) Login(ctx context.Context, payload LoginPayload) (string, string, error) {
@@ -131,7 +131,7 @@ func (s *Service) getUser(ctx context.Context, userId string) (UserResponse, err
 	if err != nil {
 		return UserResponse{}, err
 	}
-	return UserResponse{Id: user.Id, Username: user.Username}, nil
+	return UserResponse{ID: user.Id, Username: user.Username}, nil
 }
 
 func (s *Service) Refresh(ctx context.Context, token string) (string, string, error) {
@@ -143,11 +143,11 @@ func (s *Service) Refresh(ctx context.Context, token string) (string, string, er
 	if err != nil {
 		return "", "", err
 	}
-	accessToken, err := s.jwtProvider.signJWT(existing.UserId.Hex())
+	accessToken, err := s.jwtProvider.signJWT(existing.UserID.Hex())
 	if err != nil {
 		return "", "", err
 	}
-	refreshToken, err := s.issueRefreshToken(ctx, existing.UserId)
+	refreshToken, err := s.issueRefreshToken(ctx, existing.UserID)
 	if err != nil {
 		return "", "", err
 	}
@@ -161,7 +161,7 @@ func (s *Service) issueRefreshToken(ctx context.Context, userId bson.ObjectID) (
 	}
 	now := time.Now().UTC()
 	err = s.refreshTokenRepo.Create(ctx, RefreshToken{
-		UserId:      userId,
+		UserID:      userId,
 		HashedToken: hashedToken,
 		IsRevoked:   false,
 		RevokedAt:   nil,
