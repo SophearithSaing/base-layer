@@ -53,7 +53,7 @@ func (r *Repository) GetProjectByID(ctx context.Context, id string) (Project, er
 
 func (r *Repository) SearchProjects(ctx context.Context, filter bson.D, sort bson.D) ([]Project, error) {
 	opts := options.Find().SetSort(sort)
-	cursor, err := r.ProgressCollection.Find(ctx, filter, opts)
+	cursor, err := r.ProjectCollection.Find(ctx, filter, opts)
 	if err != nil {
 		return []Project{}, err
 	}
