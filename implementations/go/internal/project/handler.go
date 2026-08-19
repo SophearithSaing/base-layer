@@ -25,7 +25,6 @@ func (h *Handler) ListProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	var payload Project
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
@@ -42,6 +41,6 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.JSONResponseWriter(w, http.StatusCreated, api.GenericResponse{
-		Message: "user created",
+		Message: "project created",
 	})
 }
