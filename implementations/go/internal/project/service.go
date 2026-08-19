@@ -1,6 +1,7 @@
 package project
 
 import (
+	"baselayer/internal/auth"
 	"context"
 	"time"
 
@@ -47,7 +48,32 @@ func (s *Service) GetProjectByID(ctx context.Context, id string) (*Project, erro
 
 func UpdateProject() {}
 
-func StartProject() {}
+func (s *Service) StartProject(ctx context.Context, id string) (string, error) {
+	rawUserID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return "", err
+	}
+	userID, err := bson.ObjectIDFromHex(rawUserID)
+	if err != nil {
+		return "", err
+	}
+	project, err := s.repo.GetProjectByID(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	now := time.Now()
+	progress := ProjectProgress{
+		ID:          bson.NewObjectID(),
+		UserID:      userID,
+		ProjectID:   project.ID,
+		Title:       project.Title,
+		Description: project.Description,
+		Progress:    0,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+	return s.repo.CreateProgress(ctx, progress)
+}
 
 func ListProgresses() {}
 

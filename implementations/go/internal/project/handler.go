@@ -56,3 +56,17 @@ func (h *Handler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
 	}
 	api.JSONResponseWriter(w, http.StatusOK, project)
 }
+
+func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("id")
+	progressID, err := h.service.StartProject(r.Context(), projectID)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+	}
+	api.JSONResponseWriter(w, http.StatusCreated, api.GenericCreatedResponse{
+		Id:      progressID,
+		Message: "project started",
+	})
+}

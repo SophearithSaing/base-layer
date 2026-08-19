@@ -65,12 +65,16 @@ func (r *Repository) SearchProjects(ctx context.Context, filter bson.D, sort bso
 	return projects, nil
 }
 
-func (r *Repository) CreateProgress(ctx context.Context, progress ProjectProgress) error {
-	_, err := r.ProgressCollection.InsertOne(ctx, progress)
+func (r *Repository) CreateProgress(ctx context.Context, progress ProjectProgress) (string, error) {
+	result, err := r.ProgressCollection.InsertOne(ctx, progress)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	id, err := getStringID(result.InsertedID)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func (r *Repository) UpdateProgress(ctx context.Context, filter bson.M, update bson.M) error {
@@ -108,4 +112,12 @@ func (r *Repository) SearchProgresses(ctx context.Context, filter bson.D, sort b
 		return []ProjectProgress{}, err
 	}
 	return progresses, nil
+}
+
+func getStringID(raw any) (string, error) {
+	objectID, ok := raw.(bson.ObjectID)
+	if !ok {
+		return "", ErrInvalidID
+	}
+	return objectID.Hex(), nil
 }

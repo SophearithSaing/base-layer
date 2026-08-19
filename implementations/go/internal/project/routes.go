@@ -6,7 +6,8 @@ import (
 )
 
 func RegisterRoutes(mux *http.ServeMux, handler *Handler, authMiddleware auth.AuthMiddleware) {
+	mux.Handle("POST /projects/create", authMiddleware(http.HandlerFunc(handler.CreateProject)))
 	mux.Handle("GET /projects", authMiddleware(http.HandlerFunc(handler.ListProjects)))
 	mux.Handle("GET /projects/{id}", authMiddleware(http.HandlerFunc(handler.GetProjectByID)))
-	mux.Handle("POST /projects/create", authMiddleware(http.HandlerFunc(handler.CreateProject)))
+	mux.Handle("POST /projects/{id}/start", authMiddleware(http.HandlerFunc(handler.StartProject)))
 }
