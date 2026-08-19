@@ -74,7 +74,7 @@ func run() error {
 	// Auth
 	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
 	jwtProvider := auth.NewJWTProvider(jwtSecret)
-	authMiddleware := auth.AuthMiddleware(jwtProvider)
+	authMiddleware := auth.NewAuthMiddleware(jwtProvider)
 	authService := auth.NewService(refreshTokenRepo, jwtProvider, userService)
 	authHandler := auth.NewHandler(authService)
 

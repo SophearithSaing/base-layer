@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func RegisterRoutes(mux *http.ServeMux, handler *Handler, authMiddleware func(http.Handler) http.Handler) {
+func RegisterRoutes(mux *http.ServeMux, handler *Handler, authMiddleware AuthMiddleware) {
 	mux.HandleFunc("POST /auth/register", handler.Register)
 	mux.HandleFunc("POST /auth/login", handler.Login)
 	mux.HandleFunc("POST /auth/refresh", handler.Refresh)
