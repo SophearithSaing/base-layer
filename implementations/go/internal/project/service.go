@@ -15,7 +15,11 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func ListProjects() {}
+func (s *Service) ListProjects(ctx context.Context) ([]Project, error) {
+	filter := bson.D{}
+	sort := bson.D{{Key: "createdAt", Value: -1}}
+	return s.repo.SearchProjects(ctx, filter, sort)
+}
 
 func (s *Service) CreateProject(ctx context.Context, payload Project) error {
 	project := Project{

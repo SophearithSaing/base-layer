@@ -14,6 +14,16 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+func (h *Handler) ListProjects(w http.ResponseWriter, r *http.Request) {
+	projects, err := h.service.ListProjects(r.Context())
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+	}
+	api.JSONResponseWriter(w, http.StatusOK, projects)
+}
+
 func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var payload Project
