@@ -37,18 +37,18 @@ func (r *Repository) UpdateProject(ctx context.Context, filter bson.M, update bs
 	return project, nil
 }
 
-func (r *Repository) GetProjectByID(ctx context.Context, id string) (Project, error) {
+func (r *Repository) GetProjectByID(ctx context.Context, id string) (*Project, error) {
 	var project Project
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return Project{}, err
+		return nil, err
 	}
 	filter := bson.D{{Key: "_id", Value: objectID}}
 	err = r.ProjectCollection.FindOne(ctx, filter).Decode(&project)
 	if err != nil {
-		return Project{}, err
+		return nil, err
 	}
-	return project, nil
+	return &project, nil
 }
 
 func (r *Repository) SearchProjects(ctx context.Context, filter bson.D, sort bson.D) ([]Project, error) {

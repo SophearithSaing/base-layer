@@ -44,3 +44,15 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		Message: "project created",
 	})
 }
+
+func (h *Handler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	project, err := h.service.GetProjectByID(r.Context(), id)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, project)
+}

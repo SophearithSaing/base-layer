@@ -37,7 +37,13 @@ func (s *Service) CreateProject(ctx context.Context, payload Project) error {
 	return s.repo.CreateProject(ctx, project)
 }
 
-func GetProjectByID() {}
+func (s *Service) GetProjectByID(ctx context.Context, id string) (*Project, error) {
+	project, err := s.repo.GetProjectByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return project, err
+}
 
 func UpdateProject() {}
 
