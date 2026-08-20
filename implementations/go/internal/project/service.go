@@ -75,7 +75,19 @@ func (s *Service) StartProject(ctx context.Context, id string) (string, error) {
 	return s.repo.CreateProgress(ctx, progress)
 }
 
-func ListProgresses() {}
+func (s *Service) ListProgresses(ctx context.Context) (*[]ProjectProgress, error) {
+	rawUserID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userID, err := bson.ObjectIDFromHex(rawUserID)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.D{{Key: "userId", Value: userID}}
+	sort := bson.D{{Key: "createdAt", Value: -1}}
+	return s.repo.SearchProgresses(ctx, filter, sort)
+}
 
 func GetProgressByID() {}
 

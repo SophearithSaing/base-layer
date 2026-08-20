@@ -70,3 +70,13 @@ func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
 		Message: "project started",
 	})
 }
+
+func (h *Handler) ListProgresses(w http.ResponseWriter, r *http.Request) {
+	progresses, err := h.service.ListProgresses(r.Context())
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+	}
+	api.JSONResponseWriter(w, http.StatusOK, progresses)
+}

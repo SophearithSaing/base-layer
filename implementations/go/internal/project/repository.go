@@ -100,18 +100,18 @@ func (r *Repository) GetProgressByID(ctx context.Context, id string) (ProjectPro
 	return progress, nil
 }
 
-func (r *Repository) SearchProgresses(ctx context.Context, filter bson.D, sort bson.D) ([]ProjectProgress, error) {
+func (r *Repository) SearchProgresses(ctx context.Context, filter bson.D, sort bson.D) (*[]ProjectProgress, error) {
 	opts := options.Find().SetSort(sort)
 	cursor, err := r.ProgressCollection.Find(ctx, filter, opts)
 	if err != nil {
-		return []ProjectProgress{}, err
+		return nil, err
 	}
 	var progresses []ProjectProgress
 	err = cursor.All(ctx, &progresses)
 	if err != nil {
-		return []ProjectProgress{}, err
+		return nil, err
 	}
-	return progresses, nil
+	return &progresses, nil
 }
 
 func getStringID(raw any) (string, error) {
