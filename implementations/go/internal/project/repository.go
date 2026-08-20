@@ -86,18 +86,18 @@ func (r *Repository) UpdateProgress(ctx context.Context, filter bson.M, update b
 	return nil
 }
 
-func (r *Repository) GetProgressByID(ctx context.Context, id string) (ProjectProgress, error) {
+func (r *Repository) GetProgressByID(ctx context.Context, id string) (*ProjectProgress, error) {
 	var progress ProjectProgress
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return ProjectProgress{}, err
+		return nil, err
 	}
 	filter := bson.D{{Key: "_id", Value: objectID}}
 	err = r.ProgressCollection.FindOne(ctx, filter).Decode(&progress)
 	if err != nil {
-		return ProjectProgress{}, err
+		return nil, err
 	}
-	return progress, nil
+	return &progress, nil
 }
 
 func (r *Repository) SearchProgresses(ctx context.Context, filter bson.D, sort bson.D) (*[]ProjectProgress, error) {

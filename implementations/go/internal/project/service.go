@@ -89,7 +89,20 @@ func (s *Service) ListProgresses(ctx context.Context) (*[]ProjectProgress, error
 	return s.repo.SearchProgresses(ctx, filter, sort)
 }
 
-func GetProgressByID() {}
+func (s *Service) GetProgressByID(ctx context.Context, id string) (*ProjectProgress, error) {
+	userID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	progress, err := s.repo.GetProgressByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if progress.UserID.Hex() != userID {
+		return nil, ErrUserDontHavePermissionToView
+	}
+	return progress, nil
+}
 
 func UpdateProgress() {}
 
