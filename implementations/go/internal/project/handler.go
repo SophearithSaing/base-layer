@@ -64,6 +64,7 @@ func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
 		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
 			Message: err.Error(),
 		})
+		return
 	}
 	api.JSONResponseWriter(w, http.StatusCreated, api.GenericCreatedResponse{
 		Id:      progressID,
@@ -77,6 +78,7 @@ func (h *Handler) ListProgresses(w http.ResponseWriter, r *http.Request) {
 		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
 			Message: err.Error(),
 		})
+		return
 	}
 	api.JSONResponseWriter(w, http.StatusOK, progresses)
 }
