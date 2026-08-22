@@ -5,6 +5,7 @@ import (
 	"baselayer/internal/auth"
 	"baselayer/internal/config"
 	"baselayer/internal/db"
+	"baselayer/internal/project"
 	"baselayer/internal/user"
 	"context"
 	"errors"
@@ -74,9 +75,14 @@ func run() error {
 	// Auth
 	refreshTokenRepo := auth.NewRefreshTokenRepository(mongo.DB)
 	jwtProvider := auth.NewJWTProvider(jwtSecret)
-	authMiddleware := auth.AuthMiddleware(jwtProvider)
+	authMiddleware := auth.NewAuthMiddleware(jwtProvider)
 	authService := auth.NewService(refreshTokenRepo, jwtProvider, userService)
 	authHandler := auth.NewHandler(authService)
+
+	// Project
+	projectRepo := project.NewRepository(mongo.DB)
+	projectService := project.NewService(projectRepo)
+	projectHandler := project.NewHandler(projectService)
 
 	mux := http.NewServeMux()
 	server := &http.Server{
@@ -88,6 +94,7 @@ func run() error {
 
 	api.HandleRoutes(mux)
 	auth.RegisterRoutes(mux, authHandler, authMiddleware)
+	project.RegisterRoutes(mux, projectHandler, authMiddleware)
 
 	serverErr := make(chan error, 1)
 

@@ -10,7 +10,9 @@ type contextKey string
 
 const claimsKey contextKey = "userID"
 
-func AuthMiddleware(provider *JWTProvider) func(http.Handler) http.Handler {
+type AuthMiddleware func(http.Handler) http.Handler
+
+func NewAuthMiddleware(provider *JWTProvider) AuthMiddleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("access_token")
