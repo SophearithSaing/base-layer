@@ -74,10 +74,7 @@ func (h *Handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	api.JSONResponseWriter(w, http.StatusOK, api.GenericUpdatedResponse[Project]{
-		Item:    *project,
-		Message: "project updated",
-	})
+	api.JSONResponseWriter(w, http.StatusOK, project)
 }
 
 func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
