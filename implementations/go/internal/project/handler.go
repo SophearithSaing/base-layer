@@ -57,6 +57,29 @@ func (h *Handler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
 	api.JSONResponseWriter(w, http.StatusOK, project)
 }
 
+func (h *Handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var payload UpdateProjectPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	project, err := h.service.UpdateProject(r.Context(), id, payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, api.GenericUpdatedResponse[Project]{
+		Item:    *project,
+		Message: "project updated",
+	})
+}
+
 func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("id")
 	progressID, err := h.service.StartProject(r.Context(), projectID)

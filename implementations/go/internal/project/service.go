@@ -46,7 +46,13 @@ func (s *Service) GetProjectByID(ctx context.Context, id string) (*Project, erro
 	return project, err
 }
 
-func UpdateProject() {}
+func (s *Service) UpdateProject(ctx context.Context, id string, payload UpdateProjectPayload) (*Project, error) {
+	update := UpdatePayload[UpdateProjectPayload]{
+		Payload:   payload,
+		UpdatedAt: time.Now(),
+	}
+	return s.repo.UpdateProject(ctx, id, bson.M{"$set": update})
+}
 
 func (s *Service) StartProject(ctx context.Context, id string) (string, error) {
 	rawUserID, err := auth.CurrentUserID(ctx)

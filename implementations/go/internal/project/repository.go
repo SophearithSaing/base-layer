@@ -28,13 +28,16 @@ func (r *Repository) CreateProject(ctx context.Context, project Project) error {
 	return nil
 }
 
-func (r *Repository) UpdateProject(ctx context.Context, filter bson.M, update bson.M) (Project, error) {
+func (r *Repository) UpdateProject(ctx context.Context, id string, update bson.M) (*Project, error) {
 	var project Project
-	err := r.ProgressCollection.FindOneAndUpdate(ctx, filter, update).Decode(&project)
+	objectID, err := bson.ObjectIDFromHex(id)
+	filter := bson.D{{Key: "_id", Value: objectID}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	err = r.ProjectCollection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&project)
 	if err != nil {
-		return Project{}, err
+		return nil, err
 	}
-	return project, nil
+	return &project, nil
 }
 
 func (r *Repository) GetProjectByID(ctx context.Context, id string) (*Project, error) {
