@@ -15,4 +15,5 @@ func RegisterRoutes(mux *http.ServeMux, handler *Handler, authMiddleware auth.Au
 	mux.Handle("GET /projects/progresses", authMiddleware(http.HandlerFunc(handler.ListProgresses)))
 	mux.Handle("GET /projects/progresses/{id}", authMiddleware(http.HandlerFunc(handler.GetProgressByID)))
 	mux.Handle("PATCH /projects/progresses/{id}", authMiddleware(http.HandlerFunc(handler.UpdateProgress)))
+	mux.Handle("PATCH /projects/progresses/{id}/completed-items", authMiddleware(http.HandlerFunc(handler.UpdateCompletedItems)))
 }

@@ -100,3 +100,7 @@ type UpdateProjectProgressPayload struct {
 	Progress       *int                    `bson:"progress,omitempty" json:"progress,omitempty"`
 	Notes          *map[string]NoteContent `bson:"notes,omitempty" json:"notes,omitempty"`
 }
+
+type UpdateCompletedItemsPayload struct {
+	CompletedItems *map[string]bool `bson:"completedItems" json:"completedItems"`
+}

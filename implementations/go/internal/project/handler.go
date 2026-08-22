@@ -134,3 +134,23 @@ func (h *Handler) UpdateProgress(w http.ResponseWriter, r *http.Request) {
 	}
 	api.JSONResponseWriter(w, http.StatusOK, progress)
 }
+
+func (h *Handler) UpdateCompletedItems(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var payload UpdateCompletedItemsPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	progress, err := h.service.UpdateCompletedItems(r.Context(), id, payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, progress)
+}

@@ -3,6 +3,8 @@ package project
 import (
 	"baselayer/internal/auth"
 	"context"
+	"maps"
+	"math"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -134,4 +136,56 @@ func (s *Service) UpdateProgress(ctx context.Context, id string, payload UpdateP
 	return s.repo.UpdateProgress(ctx, filter, bson.M{"$set": update})
 }
 
-func UpdateCompletedItems() {}
+func (s *Service) UpdateCompletedItems(ctx context.Context, id string, payload UpdateCompletedItemsPayload) (*ProjectProgress, error) {
+	rawUserID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	progressID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	progress, err := s.repo.GetProgressByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if progress.UserID.Hex() != rawUserID {
+		return nil, ErrUserDontHavePermissionToView
+	}
+	project, err := s.repo.GetProjectByID(ctx, progress.ProjectID.Hex())
+	if err != nil {
+		return nil, err
+	}
+
+	completedItems := progress.CompletedItems
+	if completedItems == nil {
+		completedItems = make(map[string]bool)
+	}
+	maps.Copy(completedItems, *payload.CompletedItems)
+	completedTasks := 0
+	for _, v := range completedItems {
+		if v {
+			completedTasks++
+		}
+	}
+	phaseTasks := 0
+	for _, phase := range project.Phases {
+		phaseTasks += len(phase.Concepts) + len(phase.Tools) + len(phase.Practice)
+	}
+	capstoneTasks := 0
+	for _, capstone := range project.Capstones {
+		capstoneTasks += len(capstone.Build) + len(capstone.Concepts) + len(capstone.Tools)
+	}
+	totalTasks := phaseTasks + capstoneTasks
+	percentage := math.Round(float64(completedTasks) / float64(totalTasks) * 100)
+
+	filter := bson.M{"_id": progressID}
+	update := bson.M{
+		"$set": bson.M{
+			"completedItems": completedItems,
+			"progress":       percentage,
+			"updatedAt":      time.Now(),
+		},
+	}
+	return s.repo.UpdateProgress(ctx, filter, update)
+}
