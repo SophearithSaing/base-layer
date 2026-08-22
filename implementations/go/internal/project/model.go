@@ -23,7 +23,7 @@ type Phase struct {
 	Type          string   `json:"type"`
 	Difficulty    int      `json:"difficulty"`
 	Summary       string   `json:"summary"`
-	Concepts      []string `json:"concepts"`
+	Concepts      []Item   `json:"concepts"`
 	Tools         []Item   `json:"tools"`
 	Practice      []Item   `json:"practice"`
 	MasteryChecks []string `json:"masterChecks"`
