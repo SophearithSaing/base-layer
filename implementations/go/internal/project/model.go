@@ -77,3 +77,18 @@ type ProjectProgress struct {
 	CreatedAt      time.Time              `bson:"createdAt" json:"createdAt"`
 	UpdatedAt      time.Time              `bson:"updatedAt" json:"updatedAt"`
 }
+
+type UpdatePayload[T any] struct {
+	Payload   T         `bson:",inline"`
+	UpdatedAt time.Time `bson:"updatedAt"`
+}
+
+type UpdateProjectPayload struct {
+	Title              *string     `bson:"title,omitempty" json:"title,omitempty"`
+	Description        *string     `bson:"description,omitempty" json:"description,omitempty"`
+	Legend             *Legend     `bson:"legend,omitempty" json:"legend,omitempty"`
+	Phases             *[]Phase    `bson:"phases,omitempty" json:"phases,omitempty"`
+	Capstones          *[]Capstone `bson:"capstones,omitempty" json:"capstones,omitempty"`
+	RecommendedOrder   *[]string   `bson:"recommendedOrder,omitempty" json:"recommendedOrder,omitempty"`
+	MasteryDefinitions *[]string   `bson:"masteryDefinitions,omitempty" json:"masteryDefinitions,omitempty"`
+}
