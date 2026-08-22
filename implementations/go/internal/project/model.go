@@ -92,3 +92,11 @@ type UpdateProjectPayload struct {
 	RecommendedOrder   *[]string   `bson:"recommendedOrder,omitempty" json:"recommendedOrder,omitempty"`
 	MasteryDefinitions *[]string   `bson:"masteryDefinitions,omitempty" json:"masteryDefinitions,omitempty"`
 }
+
+type UpdateProjectProgressPayload struct {
+	Title          *string                 `bson:"title,omitempty" json:"title,omitempty"`
+	Description    *string                 `bson:"description,omitempty" json:"description,omitempty"`
+	CompletedItems *map[string]bool        `bson:"completedItems,omitempty" json:"completedItems,omitempty"`
+	Progress       *int                    `bson:"progress,omitempty" json:"progress,omitempty"`
+	Notes          *map[string]NoteContent `bson:"notes,omitempty" json:"notes,omitempty"`
+}

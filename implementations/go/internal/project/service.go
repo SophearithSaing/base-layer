@@ -110,6 +110,28 @@ func (s *Service) GetProgressByID(ctx context.Context, id string) (*ProjectProgr
 	return progress, nil
 }
 
-func UpdateProgress() {}
+func (s *Service) UpdateProgress(ctx context.Context, id string, payload UpdateProjectProgressPayload) (*ProjectProgress, error) {
+	rawUserID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userID, err := bson.ObjectIDFromHex(rawUserID)
+	if err != nil {
+		return nil, err
+	}
+	progressID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{
+		"_id":    progressID,
+		"userId": userID,
+	}
+	update := UpdatePayload[UpdateProjectProgressPayload]{
+		Payload:   payload,
+		UpdatedAt: time.Now(),
+	}
+	return s.repo.UpdateProgress(ctx, filter, bson.M{"$set": update})
+}
 
 func UpdateCompletedItems() {}

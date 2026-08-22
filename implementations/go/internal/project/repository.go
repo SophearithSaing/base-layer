@@ -80,13 +80,14 @@ func (r *Repository) CreateProgress(ctx context.Context, progress ProjectProgres
 	return id, nil
 }
 
-func (r *Repository) UpdateProgress(ctx context.Context, filter bson.M, update bson.M) error {
+func (r *Repository) UpdateProgress(ctx context.Context, filter bson.M, update bson.M) (*ProjectProgress, error) {
 	var progress ProjectProgress
-	err := r.ProgressCollection.FindOneAndUpdate(ctx, filter, update).Decode(&progress)
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	err := r.ProgressCollection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&progress)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &progress, nil
 }
 
 func (r *Repository) GetProgressByID(ctx context.Context, id string) (*ProjectProgress, error) {
