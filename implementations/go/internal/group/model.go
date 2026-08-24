@@ -15,6 +15,11 @@ type Group struct {
 	UpdatedAt time.Time     `bson:"updatedAt" json:"updatedAt"`
 }
 
+type CreateGroupPayload struct {
+	Name   string   `bson:"name" json:"name"`
+	People []string `bson:"people" json:"people"`
+}
+
 type UpdateGroupPayload struct {
 	Name   string   `bson:"name,omitempty" json:"name,omitempty"`
 	People []string `bson:"people,omitempty" json:"people,omitempty"`
