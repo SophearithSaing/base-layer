@@ -21,12 +21,14 @@ func (h *Handler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
 			Message: err.Error(),
 		})
+		return
 	}
 	id, err := h.service.CreateGroup(r.Context(), payload)
 	if err != nil {
 		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
 			Message: err.Error(),
 		})
+		return
 	}
 	api.JSONResponseWriter(w, http.StatusCreated, api.GenericCreatedResponse{
 		ID:      id,
