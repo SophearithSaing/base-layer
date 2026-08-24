@@ -46,3 +46,15 @@ func (h *Handler) ListGroup(w http.ResponseWriter, r *http.Request) {
 	}
 	api.JSONResponseWriter(w, http.StatusOK, groups)
 }
+
+func (h *Handler) GetGroupByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	group, err := h.service.GetGroupByID(r.Context(), id)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, group)
+}

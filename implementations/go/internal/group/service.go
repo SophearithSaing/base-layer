@@ -42,6 +42,21 @@ func (s *Service) ListGroup(ctx context.Context) (*[]Group, error) {
 	return s.repo.Search(ctx, filter, sort)
 }
 
+func (s *Service) GetGroupByID(ctx context.Context, id string) (*Group, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	group, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if group.CreatorID != userID {
+		return nil, ErrUserDontHavePermissionToView
+	}
+	return group, nil
+}
+
 func currentUserID(ctx context.Context) (bson.ObjectID, error) {
 	rawID, err := auth.CurrentUserID(ctx)
 	if err != nil {
