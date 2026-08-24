@@ -87,7 +87,7 @@ func (h *Handler) StartProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.JSONResponseWriter(w, http.StatusCreated, api.GenericCreatedResponse{
-		Id:      progressID,
+		ID:      progressID,
 		Message: "project started",
 	})
 }

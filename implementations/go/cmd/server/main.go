@@ -5,6 +5,7 @@ import (
 	"baselayer/internal/auth"
 	"baselayer/internal/config"
 	"baselayer/internal/db"
+	"baselayer/internal/group"
 	"baselayer/internal/project"
 	"baselayer/internal/user"
 	"context"
@@ -84,6 +85,11 @@ func run() error {
 	projectService := project.NewService(projectRepo)
 	projectHandler := project.NewHandler(projectService)
 
+	// Group
+	groupRepo := group.NewRepository(mongo.DB)
+	groupService := group.NewService(groupRepo)
+	groupHandler := group.NewHandler(groupService)
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -95,6 +101,7 @@ func run() error {
 	api.HandleRoutes(mux)
 	auth.RegisterRoutes(mux, authHandler, authMiddleware)
 	project.RegisterRoutes(mux, projectHandler, authMiddleware)
+	group.RegisterRoutes(mux, groupHandler, authMiddleware)
 
 	serverErr := make(chan error, 1)
 

@@ -11,7 +11,7 @@ type GenericResponse struct {
 }
 
 type GenericCreatedResponse struct {
-	Id      string `json:"id"`
+	ID      string `json:"id"`
 	Message string `json:"message"`
 }
 
