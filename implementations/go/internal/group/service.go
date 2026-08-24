@@ -57,6 +57,26 @@ func (s *Service) GetGroupByID(ctx context.Context, id string) (*Group, error) {
 	return group, nil
 }
 
+func (s *Service) UpdateGroup(ctx context.Context, id string, payload UpdateGroupPayload) (*Group, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	objectID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{
+		"_id":       objectID,
+		"creatorId": userID,
+	}
+	update := UpdatePayload[UpdateGroupPayload]{
+		Payload:   payload,
+		UpdatedAt: time.Now(),
+	}
+	return s.repo.Update(ctx, filter, bson.M{"$set": update})
+}
+
 func currentUserID(ctx context.Context) (bson.ObjectID, error) {
 	rawID, err := auth.CurrentUserID(ctx)
 	if err != nil {

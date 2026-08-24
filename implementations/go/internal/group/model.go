@@ -20,6 +20,11 @@ type CreateGroupPayload struct {
 	People []string `bson:"people" json:"people"`
 }
 
+type UpdatePayload[T any] struct {
+	Payload   T         `bson:",inline"`
+	UpdatedAt time.Time `bson:"updatedAt"`
+}
+
 type UpdateGroupPayload struct {
 	Name   string   `bson:"name,omitempty" json:"name,omitempty"`
 	People []string `bson:"people,omitempty" json:"people,omitempty"`

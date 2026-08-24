@@ -56,15 +56,13 @@ func (r *Repository) Search(ctx context.Context, filter bson.M, sort bson.D) (*[
 	return &groups, nil
 }
 
-func (r *Repository) Update(ctx context.Context, id string, update bson.M) (*Group, error) {
-	objectID, err := bson.ObjectIDFromHex(id)
+func (r *Repository) Update(ctx context.Context, filter bson.M, update bson.M) (*Group, error) {
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	var group Group
+	err := r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&group)
 	if err != nil {
 		return nil, err
 	}
-	filter := bson.M{"_id": objectID}
-	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-	var group Group
-	err = r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&group)
 	return &group, nil
 }
 

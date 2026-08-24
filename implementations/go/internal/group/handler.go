@@ -58,3 +58,23 @@ func (h *Handler) GetGroupByID(w http.ResponseWriter, r *http.Request) {
 	}
 	api.JSONResponseWriter(w, http.StatusOK, group)
 }
+
+func (h *Handler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var payload UpdateGroupPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	group, err := h.service.UpdateGroup(r.Context(), id, payload)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, group)
+}
