@@ -32,6 +32,16 @@ func (s *Service) CreateGroup(ctx context.Context, payload CreateGroupPayload) (
 	return s.repo.Create(ctx, group)
 }
 
+func (s *Service) ListGroup(ctx context.Context) (*[]Group, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"creatorId": userID}
+	sort := bson.D{{Key: "createdAt", Value: -1}}
+	return s.repo.Search(ctx, filter, sort)
+}
+
 func currentUserID(ctx context.Context) (bson.ObjectID, error) {
 	rawID, err := auth.CurrentUserID(ctx)
 	if err != nil {

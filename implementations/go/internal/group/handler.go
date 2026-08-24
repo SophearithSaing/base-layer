@@ -35,3 +35,14 @@ func (h *Handler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		Message: "group created",
 	})
 }
+
+func (h *Handler) ListGroup(w http.ResponseWriter, r *http.Request) {
+	groups, err := h.service.ListGroup(r.Context())
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, groups)
+}
