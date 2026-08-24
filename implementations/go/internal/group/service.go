@@ -17,21 +17,29 @@ func NewService(repo *Repository) *Service {
 }
 
 func (s *Service) CreateGroup(ctx context.Context, payload CreateGroupPayload) (string, error) {
-	rawID, err := auth.CurrentUserID(ctx)
-	if err != nil {
-		return "", err
-	}
-	objectID, err := bson.ObjectIDFromHex(rawID)
+	userID, err := currentUserID(ctx)
 	if err != nil {
 		return "", err
 	}
 	now := time.Now()
 	group := Group{
 		ID:        bson.NewObjectID(),
-		CreatorID: objectID,
+		CreatorID: userID,
 		Name:      payload.Name,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
 	return s.repo.Create(ctx, group)
+}
+
+func currentUserID(ctx context.Context) (bson.ObjectID, error) {
+	rawID, err := auth.CurrentUserID(ctx)
+	if err != nil {
+		return bson.NilObjectID, err
+	}
+	objectID, err := bson.ObjectIDFromHex(rawID)
+	if err != nil {
+		return bson.NilObjectID, err
+	}
+	return objectID, nil
 }
