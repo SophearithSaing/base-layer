@@ -36,3 +36,23 @@ type AIExtraction struct {
 	ExtractedItems []Item        `bson:"extractedItems" json:"extractedItems"`
 	CreatedAt      time.Time     `bson:"createdAt" json:"createdAt"`
 }
+
+type MessagePayload struct {
+	Message string `json:"message"`
+}
+
+type Message struct {
+	Role    MessageRole `json:"role"`
+	Content string      `json:"content"`
+}
+
+type ChatRequest struct {
+	Model    AIModel   `json:"model"`
+	Messages []Message `json:"messages"`
+}
+
+type ChatResponse struct {
+	Choices []struct {
+		Message Message `json:"message"`
+	} `json:"choices"`
+}
