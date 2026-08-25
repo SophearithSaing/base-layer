@@ -70,6 +70,11 @@ func run() error {
 		return fmt.Errorf("error getting jwt secret: %w", err)
 	}
 
+	togetherAPIKey, err := config.GetTogetherAPIKey()
+	if err != nil {
+		return fmt.Errorf("error getting together api key: %w", err)
+	}
+
 	// User
 	userRepo := user.NewRepository(mongo.DB)
 	userService := user.NewService(userRepo)
@@ -93,7 +98,7 @@ func run() error {
 
 	// AI
 	aiRepo := ai.NewRepository(mongo.DB)
-	aiService := ai.NewService(aiRepo)
+	aiService := ai.NewService(aiRepo, togetherAPIKey)
 	aiHandler := ai.NewHandler(aiService)
 
 	mux := http.NewServeMux()
