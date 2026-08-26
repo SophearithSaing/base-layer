@@ -32,8 +32,8 @@ type AIExtraction struct {
 	UserID         bson.ObjectID `bson:"userId" json:"userId"`
 	FileName       string        `bson:"fileName" json:"fileName"`
 	MimeType       string        `bson:"mimeType" json:"mimeType"`
-	ExtractedText  string        `bson:"extractedText" json:"extractedText"`
-	ExtractedItems []Item        `bson:"extractedItems" json:"extractedItems"`
+	ExtractedText  string        `bson:"extractedText,omitempty" json:"extractedText,omitempty"`
+	ExtractedItems []Item        `bson:"extractedItems,omitempty" json:"extractedItems,omitempty"`
 	CreatedAt      time.Time     `bson:"createdAt" json:"createdAt"`
 }
 
