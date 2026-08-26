@@ -33,7 +33,7 @@ func NewService(repo *Repository, apiKey string) *Service {
 		repo:   repo,
 		apiKey: apiKey,
 		client: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 60 * time.Second,
 		},
 	}
 }
