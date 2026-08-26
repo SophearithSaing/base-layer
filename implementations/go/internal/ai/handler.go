@@ -58,3 +58,28 @@ func (h *Handler) ExtractText(w http.ResponseWriter, r *http.Request) {
 		Message: result,
 	})
 }
+
+func (h *Handler) ExtractReceipt(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	extraction, err := h.service.ExtractReceipt(
+		r.Context(),
+		file,
+		header.Filename,
+		header.Header.Get("Content-Type"),
+	)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusCreated, extraction)
+}

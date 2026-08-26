@@ -23,8 +23,8 @@ type AIMessage struct {
 }
 
 type Item struct {
-	Item   string `json:"item"`
-	Amount int    `json:"amount"`
+	Name   string  `json:"name"`
+	Amount float64 `json:"amount"`
 }
 
 type AIExtraction struct {
@@ -46,13 +46,43 @@ type Message struct {
 	Content any         `json:"content"`
 }
 
+type ResponseSchema struct {
+	Name   string     `json:"name"`
+	Schema JSONSchema `json:"schema"`
+}
+
+type ResponseFormat struct {
+	Type       string         `json:"type"`
+	JSONSchema ResponseSchema `json:"json_schema"`
+}
+
+type ImageURL struct {
+	URL string `json:"url"`
+}
+
+type ImageURLContent struct {
+	Type     string   `json:"type"`
+	ImageURL ImageURL `json:"image_url"`
+}
+
 type ChatRequest struct {
-	Model    AIModel   `json:"model"`
-	Messages []Message `json:"messages"`
+	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
+	Model          AIModel         `json:"model"`
+	Messages       []Message       `json:"messages"`
 }
 
 type ChatResponse struct {
 	Choices []struct {
-		Message Message `json:"message"`
+		Message struct {
+			Content string `json:"content"`
+		} `json:"message"`
 	} `json:"choices"`
+}
+
+type JSONSchema struct {
+	Type                 string                 `json:"type,omitempty"`
+	Items                *JSONSchema            `json:"items,omitempty"`
+	Properties           map[string]*JSONSchema `json:"properties,omitempty"`
+	Required             []string               `json:"required,omitempty"`
+	AdditionalProperties *bool                  `json:"additionalProperties,omitempty"`
 }
