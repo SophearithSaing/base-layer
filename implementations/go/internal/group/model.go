@@ -7,7 +7,7 @@ import (
 )
 
 type Group struct {
-	ID        bson.ObjectID `bson:"_id" json:"_id"`
+	ID        bson.ObjectID `bson:"_id" json:"id"`
 	CreatorID bson.ObjectID `bson:"creatorId" json:"creatorId"`
 	Name      string        `bson:"name" json:"name"`
 	People    []string      `bson:"people" json:"people"`
