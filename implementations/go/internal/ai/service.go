@@ -81,14 +81,18 @@ func (s *Service) SendMessage(ctx context.Context, message string) (string, erro
 	return chatResponse.Choices[0].Message.Content, nil
 }
 
-func (s *Service) ExtractText(ctx context.Context, file io.Reader, contentType string) (string, error) {
+func (s *Service) ExtractText(ctx context.Context, file io.Reader, fileName string, mimeType string) (*AIExtraction, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	dataURL := fmt.Sprintf(
 		"data:%s;base64,%s",
-		contentType,
+		mimeType,
 		base64.StdEncoding.EncodeToString(data),
 	)
 	payload := ChatRequest{
@@ -98,40 +102,13 @@ func (s *Service) ExtractText(ctx context.Context, file io.Reader, contentType s
 				Role:    MessageRoleSystem,
 				Content: "You are an OCR text extraction assistant. Your task is to extract all visible text from the provided image as accurately as possible.",
 			},
-			// {
-			// 	Role: MessageRoleSystem,
-			// 	Content: `
-			//  				You are a receipt extraction assistant. Extract only purchased line items from the receipt image.
-			//        			Return only a valid JSON array. Each object must have exactly:
-
-			//           		* name: item name as shown
-			//             		* amount: final line item price as a number
-
-			//               	Rules:
-			//                	* Exclude subtotal, tax, discounts, tips, fees, totals, payment info, dates, store info, and receipt metadata.
-			//                 	* If quantity is shown, return one object per purchased unit.
-			//                  * If the receipt shows 2 Chicken Sandwich 11.98, return two objects, each with "amount": 5.99\.
-			//                  * If only the total line amount is shown for multiple units, divide it by the quantity.
-			//                  * Omit items with unreadable names or prices.
-			//                  * Do not guess, explain, or add Markdown.
-			//                  * If no items are found, return [].
-
-			//                  Example:
-			//                  [
-			//                  	{
-			//                   		"name": "Chicken Sandwich",
-			//                     		"amount": 5.99
-			//                       }
-			//                  ]
-			// 	`,
-			// },
 			{
 				Role: MessageRoleUser,
-				Content: []map[string]any{
+				Content: []ImageURLContent{
 					{
-						"type": "image_url",
-						"image_url": map[string]string{
-							"url": dataURL,
+						Type: "image_url",
+						ImageURL: ImageURL{
+							URL: dataURL,
 						},
 					},
 				},
@@ -141,7 +118,7 @@ func (s *Service) ExtractText(ctx context.Context, file io.Reader, contentType s
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(
@@ -151,24 +128,43 @@ func (s *Service) ExtractText(ctx context.Context, file io.Reader, contentType s
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+s.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := s.client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		responseBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("together ai error: %s", responseBody)
 	}
 	defer res.Body.Close()
 
 	var chatResponse ChatResponse
 	err = json.NewDecoder(res.Body).Decode(&chatResponse)
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+	aiExtraction := AIExtraction{
+		ID:            bson.NewObjectID(),
+		UserID:        userID,
+		ExtractedText: chatResponse.Choices[0].Message.Content,
+		FileName:      fileName,
+		MimeType:      mimeType,
+		CreatedAt:     time.Now(),
+	}
+	_, err = s.repo.CreateExtraction(ctx, aiExtraction)
+	if err != nil {
+		return nil, err
 	}
 
-	return chatResponse.Choices[0].Message.Content, nil
+	return &aiExtraction, nil
 }
 
 func (s *Service) ExtractReceipt(ctx context.Context, file io.Reader, fileName string, mimeType string) (*AIExtraction, error) {

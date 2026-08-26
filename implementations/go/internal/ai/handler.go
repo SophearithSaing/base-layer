@@ -43,9 +43,10 @@ func (h *Handler) ExtractText(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	result, err := h.service.ExtractText(
+	extraction, err := h.service.ExtractText(
 		r.Context(),
 		file,
+		header.Filename,
 		header.Header.Get("Content-Type"),
 	)
 	if err != nil {
@@ -54,9 +55,7 @@ func (h *Handler) ExtractText(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	api.JSONResponseWriter(w, http.StatusOK, api.GenericResponse{
-		Message: result,
-	})
+	api.JSONResponseWriter(w, http.StatusOK, extraction)
 }
 
 func (h *Handler) ExtractReceipt(w http.ResponseWriter, r *http.Request) {
