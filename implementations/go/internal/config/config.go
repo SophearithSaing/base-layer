@@ -79,3 +79,11 @@ func GetJWTSecret() (string, error) {
 	}
 	return secret, nil
 }
+
+func GetTogetherAPIKey() (string, error) {
+	apiKey := GetEnv("TOGETHER_API_KEY", "")
+	if apiKey == "" {
+		return "", fmt.Errorf("together api key not found")
+	}
+	return apiKey, nil
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"baselayer/internal/ai"
 	"baselayer/internal/api"
 	"baselayer/internal/auth"
 	"baselayer/internal/config"
@@ -69,6 +70,11 @@ func run() error {
 		return fmt.Errorf("error getting jwt secret: %w", err)
 	}
 
+	togetherAPIKey, err := config.GetTogetherAPIKey()
+	if err != nil {
+		return fmt.Errorf("error getting together api key: %w", err)
+	}
+
 	// User
 	userRepo := user.NewRepository(mongo.DB)
 	userService := user.NewService(userRepo)
@@ -90,6 +96,11 @@ func run() error {
 	groupService := group.NewService(groupRepo)
 	groupHandler := group.NewHandler(groupService)
 
+	// AI
+	aiRepo := ai.NewRepository(mongo.DB)
+	aiService := ai.NewService(aiRepo, togetherAPIKey)
+	aiHandler := ai.NewHandler(aiService)
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -102,6 +113,7 @@ func run() error {
 	auth.RegisterRoutes(mux, authHandler, authMiddleware)
 	project.RegisterRoutes(mux, projectHandler, authMiddleware)
 	group.RegisterRoutes(mux, groupHandler, authMiddleware)
+	ai.RegisterRoutes(mux, aiHandler, authMiddleware)
 
 	serverErr := make(chan error, 1)
 
