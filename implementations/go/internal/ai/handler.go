@@ -82,3 +82,14 @@ func (h *Handler) ExtractReceipt(w http.ResponseWriter, r *http.Request) {
 	}
 	api.JSONResponseWriter(w, http.StatusCreated, extraction)
 }
+
+func (h *Handler) GetExtractions(w http.ResponseWriter, r *http.Request) {
+	extractions, err := h.service.GetExtractions(r.Context())
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, extractions)
+}

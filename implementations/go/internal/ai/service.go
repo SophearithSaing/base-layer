@@ -301,6 +301,17 @@ func (s *Service) ExtractReceipt(ctx context.Context, file io.Reader, fileName s
 	return &aiExtraction, nil
 }
 
+func (s *Service) GetExtractions(ctx context.Context) (*[]AIExtraction, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"userId": userID}
+	sort := bson.D{{Key: "createdAt", Value: -1}}
+
+	return s.repo.GetExtractions(ctx, filter, sort)
+}
+
 func currentUserID(ctx context.Context) (bson.ObjectID, error) {
 	rawID, err := auth.CurrentUserID(ctx)
 	if err != nil {

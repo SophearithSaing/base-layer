@@ -5,6 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
@@ -41,6 +42,20 @@ func (r *Repository) CreateExtraction(ctx context.Context, extraction AIExtracti
 		return "", err
 	}
 	return id, nil
+}
+
+func (r *Repository) GetExtractions(ctx context.Context, filter bson.M, sort bson.D) (*[]AIExtraction, error) {
+	opts := options.Find().SetSort(sort)
+	cursor, err := r.extractionsCollection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	var aiExtractions []AIExtraction
+	err = cursor.All(ctx, &aiExtractions)
+	if err != nil {
+		return nil, err
+	}
+	return &aiExtractions, nil
 }
 
 func getStringID(raw any) (string, error) {
