@@ -43,7 +43,7 @@ type MessagePayload struct {
 
 type Message struct {
 	Role    MessageRole `json:"role"`
-	Content string      `json:"content"`
+	Content any         `json:"content"`
 }
 
 type ChatRequest struct {

@@ -32,3 +32,29 @@ func (h *Handler) SendMessage(w http.ResponseWriter, r *http.Request) {
 		Message: response,
 	})
 }
+
+func (h *Handler) ExtractText(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	result, err := h.service.ExtractText(
+		r.Context(),
+		file,
+		header.Header.Get("Content-Type"),
+	)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusOK, api.GenericResponse{
+		Message: result,
+	})
+}
