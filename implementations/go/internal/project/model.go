@@ -14,7 +14,7 @@ type Legend struct {
 type Item struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
-	Description string `json:"string"`
+	Description string `json:"description"`
 }
 
 type Phase struct {
@@ -26,7 +26,7 @@ type Phase struct {
 	Concepts      []Item   `json:"concepts"`
 	Tools         []Item   `json:"tools"`
 	Practice      []Item   `json:"practice"`
-	MasteryChecks []string `json:"masterChecks"`
+	MasteryChecks []string `json:"masteryChecks"`
 	Prerequisites []string `json:"prerequisites"`
 }
 
@@ -60,7 +60,7 @@ type Project struct {
 	Phases             []Phase       `bson:"phases" json:"phases"`
 	Capstones          []Capstone    `bson:"capstones" json:"capstones"`
 	RecommendedOrder   []string      `bson:"recommendedOrder" json:"recommendedOrder"`
-	MasteryDefinitions []string      `bson:"masteryDefintions" json:"masteryDefinitions"`
+	MasteryDefinitions []string      `bson:"masteryDefinitions" json:"masteryDefinitions"`
 	CreatedAt          time.Time     `bson:"createdAt" json:"createdAt"`
 	UpdatedAt          time.Time     `bson:"updatedAt" json:"updatedAt"`
 }
