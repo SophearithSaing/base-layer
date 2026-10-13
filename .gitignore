@@ -1,5 +1,7 @@
 .env
+.env.*
+!.env.example
 local-init.sh
-node_modules/
-dist/
+/bin/
 coverage/
+/coverage.out
