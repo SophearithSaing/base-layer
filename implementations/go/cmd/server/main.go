@@ -7,6 +7,7 @@ import (
 	"baselayer/internal/config"
 	"baselayer/internal/db"
 	"baselayer/internal/group"
+	"baselayer/internal/movie"
 	"baselayer/internal/project"
 	"baselayer/internal/user"
 	"context"
@@ -101,6 +102,11 @@ func run() error {
 	aiService := ai.NewService(aiRepo, togetherAPIKey)
 	aiHandler := ai.NewHandler(aiService)
 
+	// Movie
+	movieRepo := movie.NewRepository(mongo.DB)
+	movieService := movie.NewService(movieRepo)
+	movieHandler := movie.NewHandler(movieService)
+
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -114,6 +120,7 @@ func run() error {
 	project.RegisterRoutes(mux, projectHandler, authMiddleware)
 	group.RegisterRoutes(mux, groupHandler, authMiddleware)
 	ai.RegisterRoutes(mux, aiHandler, authMiddleware)
+	movie.RegisterRoutes(mux, movieHandler, authMiddleware)
 
 	serverErr := make(chan error, 1)
 

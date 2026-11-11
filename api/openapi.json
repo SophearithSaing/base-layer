@@ -3,7 +3,7 @@
   "info": {
     "title": "BaseLayer API",
     "version": "0.1.0",
-    "description": "OpenAPI definition for the current Deno HTTP API implementation."
+    "description": "OpenAPI definition for the Deno HTTP API, with Go-only movie endpoints noted separately."
   },
   "servers": [
     {
@@ -17,7 +17,11 @@
     { "name": "Projects" },
     { "name": "Project Progress" },
     { "name": "Groups" },
-    { "name": "AI" }
+    { "name": "AI" },
+    {
+      "name": "Movies",
+      "description": "Movie endpoints available in the Go implementation only."
+    }
   ],
   "paths": {
     "/": {
@@ -698,6 +702,107 @@
           "500": { "$ref": "#/components/responses/InternalServerError" }
         }
       }
+    },
+    "/movies": {
+      "get": {
+        "tags": ["Movies"],
+        "summary": "List the authenticated user's movies",
+        "description": "Returns movies ordered by createdAt descending. Returns null when no movies exist.",
+        "operationId": "listMovies",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Movie list, or null when empty.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": ["array", "null"],
+                  "items": { "$ref": "#/components/schemas/Movie" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/GoUnauthorized" },
+          "500": { "$ref": "#/components/responses/GoMovieError" }
+        }
+      }
+    },
+    "/movies/create": {
+      "post": {
+        "tags": ["Movies"],
+        "summary": "Create a movie",
+        "description": "The creator is the authenticated user. The current Go handler does not validate required fields or the rating range.",
+        "operationId": "createMovie",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MovieInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Movie created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MovieCreatedResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/GoUnauthorized" },
+          "500": { "$ref": "#/components/responses/GoMovieError" }
+        }
+      }
+    },
+    "/movies/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/IdPathParam" }],
+      "get": {
+        "tags": ["Movies"],
+        "summary": "Get a movie owned by the authenticated user",
+        "operationId": "getMovie",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Movie found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Movie" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/GoUnauthorized" },
+          "500": { "$ref": "#/components/responses/GoMovieError" }
+        }
+      },
+      "patch": {
+        "tags": ["Movies"],
+        "summary": "Update a movie owned by the authenticated user",
+        "description": "Omitted fields are unchanged. Non-null metadata replaces the entire metadata object rather than merging its fields. Date cannot be updated. Every successful update refreshes updatedAt.",
+        "operationId": "updateMovie",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MovieUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated movie.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Movie" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/GoUnauthorized" },
+          "500": { "$ref": "#/components/responses/GoMovieError" }
+        }
+      }
     }
   },
   "components": {
@@ -770,6 +875,22 @@
           }
         }
       },
+      "GoUnauthorized": {
+        "description": "Missing, invalid, or expired authentication in the Go implementation.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/GoMessageResponse" }
+          }
+        }
+      },
+      "GoMovieError": {
+        "description": "The Go movie handlers currently return HTTP 500 for decoding errors, invalid IDs, missing movies, permission failures, and database errors.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/GoMessageResponse" }
+          }
+        }
+      },
       "InternalServerError": {
         "description": "Unexpected server error.",
         "content": {
@@ -780,6 +901,99 @@
       }
     },
     "schemas": {
+      "GoMessageResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": { "message": { "type": "string" } },
+        "additionalProperties": false
+      },
+      "MovieCreatedResponse": {
+        "type": "object",
+        "required": ["id", "message"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "message": { "type": "string", "const": "movie created" }
+        },
+        "additionalProperties": false
+      },
+      "MovieRating": {
+        "type": "integer",
+        "not": { "const": 0 },
+        "description": "Non-zero movie rating. The current Go implementation does not enforce this constraint.",
+        "example": 8
+      },
+      "MovieMetadata": {
+        "type": "object",
+        "description": "Movie metadata using the current Go field types. Omitted fields receive their Go zero values; omitted slices are returned as null.",
+        "properties": {
+          "id": { "type": "integer" },
+          "overview": { "type": "string" },
+          "original_language": { "type": "string" },
+          "original_title": { "type": "string" },
+          "video": { "type": "boolean" },
+          "title": { "type": "string" },
+          "genre_ids": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          },
+          "poster_path": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          },
+          "backdrop_path": {
+            "type": ["array", "null"],
+            "items": { "type": "string" }
+          },
+          "release_date": { "type": "string" },
+          "vote_average": { "type": "number", "format": "double" },
+          "popularity": { "type": "number", "format": "double" },
+          "adult": { "type": "boolean" },
+          "vote_count": { "type": "integer" }
+        },
+        "additionalProperties": true
+      },
+      "MovieInput": {
+        "type": "object",
+        "required": ["date", "metadata", "rating"],
+        "properties": {
+          "date": { "$ref": "#/components/schemas/IsoDateTime" },
+          "metadata": { "$ref": "#/components/schemas/MovieMetadata" },
+          "rating": { "$ref": "#/components/schemas/MovieRating" }
+        },
+        "additionalProperties": true
+      },
+      "MovieUpdate": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "description": "Omit or send null to preserve existing metadata. An object replaces all metadata, including when empty.",
+            "anyOf": [
+              { "$ref": "#/components/schemas/MovieMetadata" },
+              { "type": "null" }
+            ]
+          },
+          "rating": {
+            "$ref": "#/components/schemas/MovieRating",
+            "description": "Omit to preserve the current rating. The current Go implementation also ignores zero."
+          }
+        },
+        "additionalProperties": true
+      },
+      "Movie": {
+        "allOf": [
+          { "$ref": "#/components/schemas/MovieInput" },
+          {
+            "type": "object",
+            "required": ["id", "creatorId", "createdAt", "updatedAt"],
+            "properties": {
+              "id": { "$ref": "#/components/schemas/ObjectId" },
+              "creatorId": { "$ref": "#/components/schemas/ObjectId" },
+              "createdAt": { "$ref": "#/components/schemas/IsoDateTime" },
+              "updatedAt": { "$ref": "#/components/schemas/IsoDateTime" }
+            }
+          }
+        ]
+      },
       "ObjectId": {
         "type": "string",
         "pattern": "^[0-9a-fA-F]{24}$",
