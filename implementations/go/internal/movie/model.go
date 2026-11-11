@@ -12,7 +12,7 @@ type movie struct {
 	Date      time.Time     `bson:"date" json:"date"`
 	Metadata  metadata      `bson:"metadata" json:"metadata"`
 	Rating    int           `bson:"rating" json:"rating"`
-	CreatedAt time.Time     `bson:"createAt" json:"createAt"`
+	CreatedAt time.Time     `bson:"createdAt" json:"createdAt"`
 	UpdatedAt time.Time     `bson:"updatedAt" json:"updatedAt"`
 }
 
