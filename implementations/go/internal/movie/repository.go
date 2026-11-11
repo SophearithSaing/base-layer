@@ -42,6 +42,22 @@ func (r *repository) getByID(ctx context.Context, id string) (*movie, error) {
 	return &movie, nil
 }
 
+func (r *repository) bulkCreate(ctx context.Context, movies []movie) ([]string, error) {
+	result, err := r.collection.InsertMany(ctx, movies, options.InsertMany().SetOrdered(true))
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, len(result.InsertedIDs))
+	for i, rawID := range result.InsertedIDs {
+		id, err := getStringID(rawID)
+		if err != nil {
+			return nil, err
+		}
+		ids[i] = id
+	}
+	return ids, nil
+}
+
 func (r *repository) search(ctx context.Context, filter bson.M, sort bson.D) (*[]movie, error) {
 	opts := options.Find().SetSort(sort)
 	var movies []movie

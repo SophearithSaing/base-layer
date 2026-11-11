@@ -15,6 +15,11 @@ type GenericCreatedResponse struct {
 	Message string `json:"message"`
 }
 
+type GenericBulkCreatedResponse struct {
+	IDs     []string `json:"ids"`
+	Message string   `json:"message"`
+}
+
 func JSONResponseWriter[T any](w http.ResponseWriter, statusCode int, data T) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
