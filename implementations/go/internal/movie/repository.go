@@ -13,7 +13,7 @@ type repository struct {
 }
 
 func NewRepository(db *mongo.Database) *repository {
-	return &repository{collection: db.Collection("movie")}
+	return &repository{collection: db.Collection("movies")}
 }
 
 func (r *repository) create(ctx context.Context, movie movie) (string, error) {
