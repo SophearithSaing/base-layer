@@ -3,16 +3,25 @@ package movie
 import (
 	"baselayer/internal/auth"
 	"context"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type service struct {
-	repo *repository
+type movieRepository interface {
+	create(context.Context, movie) (string, error)
+	bulkCreate(context.Context, []movie) ([]string, error)
+	getByID(context.Context, string) (*movie, error)
+	search(context.Context, bson.M, bson.D) (*[]movie, error)
+	update(context.Context, bson.M, bson.M) (*movie, error)
 }
 
-func NewService(repo *repository) *service {
+type service struct {
+	repo movieRepository
+}
+
+func NewService(repo movieRepository) *service {
 	return &service{repo: repo}
 }
 
@@ -42,6 +51,33 @@ func (s *service) listMovies(ctx context.Context) (*[]movie, error) {
 	filter := bson.M{"creatorId": userID}
 	sort := bson.D{{Key: "createdAt", Value: -1}}
 	return s.repo.search(ctx, filter, sort)
+}
+
+func (s *service) bulkCreateMovies(ctx context.Context, payloads []createMoviePayload) ([]string, error) {
+	userID, err := currentUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(payloads) == 0 {
+		return nil, ErrEmptyMovieBulk
+	}
+	now := time.Now()
+	movies := make([]movie, len(payloads))
+	for i, payload := range payloads {
+		if payload.Rating == 0 {
+			return nil, fmt.Errorf("movie %d: %w", i+1, ErrInvalidRating)
+		}
+		movies[i] = movie{
+			ID:        bson.NewObjectID(),
+			CreatorID: userID,
+			Date:      payload.Date,
+			Metadata:  payload.Metadata,
+			Rating:    payload.Rating,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+	}
+	return s.repo.bulkCreate(ctx, movies)
 }
 
 func (s *service) getMovieByID(ctx context.Context, id string) (*movie, error) {

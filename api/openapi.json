@@ -756,6 +756,54 @@
         }
       }
     },
+    "/movies/create/bulk": {
+      "post": {
+        "tags": ["Movies"],
+        "summary": "Create multiple movies",
+        "description": "Creates movies for the authenticated user using an ordered bulk insert. Empty input and zero ratings are rejected before any writes. Inserts are not atomic; a database error may leave earlier movies saved. Do not blindly retry a failed request.",
+        "operationId": "bulkCreateMovies",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/components/schemas/MovieInput" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "All movies created, with IDs in input order.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BulkCreateMoviesResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON, a non-array or empty body, invalid field types or dates, or a zero or missing rating.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GoMessageResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/GoUnauthorized" },
+          "500": {
+            "description": "Bulk insert failed. Some movies may already have been saved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GoMessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/movies/{id}": {
       "parameters": [{ "$ref": "#/components/parameters/IdPathParam" }],
       "get": {
@@ -916,10 +964,23 @@
         },
         "additionalProperties": false
       },
+      "BulkCreateMoviesResponse": {
+        "type": "object",
+        "required": ["ids", "message"],
+        "properties": {
+          "ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/ObjectId" }
+          },
+          "message": { "type": "string", "const": "movies created" }
+        },
+        "additionalProperties": false
+      },
       "MovieRating": {
         "type": "integer",
         "not": { "const": 0 },
-        "description": "Non-zero movie rating. The current Go implementation does not enforce this constraint.",
+        "description": "Non-zero movie rating. Single-movie creation does not currently enforce this constraint; bulk creation rejects zero ratings.",
         "example": 8
       },
       "MovieMetadata": {

@@ -39,6 +39,11 @@ type createMoviePayload struct {
 	Rating   int       `bson:"rating" json:"rating"`
 }
 
+type bulkCreateMoviesResponse struct {
+	IDs     []string `json:"ids"`
+	Message string   `json:"message"`
+}
+
 type updatePayload[T any] struct {
 	Payload   T         `bson:",inline"`
 	UpdatedAt time.Time `bson:"updatedAt"`

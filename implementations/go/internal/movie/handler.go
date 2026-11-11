@@ -47,6 +47,29 @@ func (h *handler) listMovies(w http.ResponseWriter, r *http.Request) {
 	api.JSONResponseWriter(w, http.StatusOK, movies)
 }
 
+func (h *handler) bulkCreateMovies(w http.ResponseWriter, r *http.Request) {
+	var payloads []createMoviePayload
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&payloads)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusBadRequest, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	ids, err := h.service.bulkCreateMovies(r.Context(), payloads)
+	if err != nil {
+		api.JSONResponseWriter(w, http.StatusInternalServerError, api.GenericResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+	api.JSONResponseWriter(w, http.StatusCreated, api.GenericBulkCreatedResponse{
+		IDs:     ids,
+		Message: "movies created",
+	})
+}
+
 func (h *handler) getMovieByID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	movie, err := h.service.getMovieByID(r.Context(), id)
